@@ -10,15 +10,27 @@ on:
 jobs:
   basic:
     runs-on: ubuntu-22.04
+    env:
+      KCTL: "minikube kubectl -- "
     steps:
       #Clone datahangar
       - name: Checkout datahangar
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: datahangar
 
+      - name: Install python3 dependencies
+        run: |
+         pip install -r datahangar/tools/requirements.txt
+
       #Start minikube
-      - name: start minikube
+      - name: Start minikube
         id: minikube
         uses: medyagh/setup-minikube@latest
 
+      #Deploy stack
+      - name: Deploy DataHangar stack
+        run: |
+          cd /home/runner/work/datahangar/datahangar/datahangar #Minikube Actions messes current dir
+          ls -la
+          tools/dhctl.py deploy
