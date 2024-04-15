@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+jobs:
+  basic:
+    runs-on: ubuntu-22.04
+    steps:
+      #Clone datahangar
+      - name: Checkout datahangar
+        uses: actions/checkout@v2
+        with:
+          path: datahangar
+
+      #Start minikube
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@latest
+
