@@ -31,6 +31,15 @@ jobs:
       #Deploy stack
       - name: Deploy DataHangar stack
         run: |
-          cd /home/runner/work/datahangar/datahangar/datahangar #Minikube Actions messes current dir
-          ls -la
-          tools/dhctl.py deploy
+          cd /home/runner/work/datahangar/datahangar/datahangar
+          tools/dhctl.py deploy dev
+
+      #Check stack health
+      - name: Check health status of the DataHangar stack
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 3
+          max_attempts: 10
+          retry_wait_seconds: 15
+          shell: bash
+          command: /home/runner/work/datahangar/datahangar/datahangar/tools/dhctl.py status dev -p /home/runner/work/datahangar/datahangar/datahangar/

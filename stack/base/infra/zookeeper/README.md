@@ -1,4 +1,4 @@
-# Zookeeper bus
+# Zookeeper
 
 Deployment files for Apache Zookeeper.
 
