@@ -9,7 +9,8 @@ E_MSG="ERROR: "
 W_MSG="WARNING: "
 
 COMPONENTS=[
-    "infra/zookeeper"
+    "infra/zookeeper",
+    "bus/kafka"
 ]
 
 #Typer stuff

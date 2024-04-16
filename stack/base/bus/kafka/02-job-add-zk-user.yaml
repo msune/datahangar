@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-add-zk-user-passwd
+  labels:
+    app: kafka-zk-cred
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: kafka-add-zk-user-passwd
+    spec:
+      containers:
+      - image: confluentinc/cp-kafka:7.5.3
+        env:
+          - name: KAFKA_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: username
+          - name: KAFKA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: password
+        command: ["bash",  "/tmp/zk_create_scram_user_pwd.sh"]
+        volumeMounts:
+          - name: kafka-config-vol
+            mountPath: /tmp/zk_create_scram_user_pwd.sh
+            readOnly: true
+            subPath: zk_create_scram_user_pwd.sh
+        imagePullPolicy: IfNotPresent
+        name: kafka-add-zk-user-passwd
+      restartPolicy: Never
+      volumes:
+        - name: kafka-config-vol
+          configMap:
+            name: kafka-config-map

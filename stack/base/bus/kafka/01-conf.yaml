@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config-map
+  namespace: datahangar-stack
+data:
+  zk_create_scram_user_pwd.sh: |-
+    set -e
+    set +x
+    kafka-configs --zookeeper zookeeper-headless-service.datahangar-stack:2181 --alter \
+    --add-config "SCRAM-SHA-512=[password=${KAFKA_PASSWORD}]" \
+    --entity-type users \
+    --entity-name ${KAFKA_USERNAME}
+    set -x
+  patch_kafka_server_jaas.conf.sh: |-
+    set +x
+    sed "s/__KAFKA_USERNAME__/${KAFKA_USERNAME}/g" /etc/kafka/kafka_server_jaas.conf.template > /etc/kafka/kafka_server_jaas.conf
+    sed -i "s/__KAFKA_PASSWORD__/${KAFKA_PASSWORD}/g" /etc/kafka/kafka_server_jaas.conf
+    set -x
+  kafka_server_jaas.conf.template: |-
+    KafkaServer {
+       org.apache.kafka.common.security.scram.ScramLoginModule required
+       username="__KAFKA_USERNAME__"
+       password="__KAFKA_PASSWORD__";
+    };
+    KafkaClient {
+       org.apache.kafka.common.security.scram.ScramLoginModule required
+       username="__KAFKA_USERNAME__"
+       password="__KAFKA_PASSWORD__";
+    };
+    Client {
+    };

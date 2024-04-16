@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: kafka
+  name: kafka
+  namespace: datahangar-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  serviceName: kafka-headless-service
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - kafka
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - image: confluentinc/cp-kafka:7.5.3
+          imagePullPolicy: IfNotPresent
+          name: kafka-broker
+          ports:
+            - containerPort: 9092
+              name: kafka-external
+            - containerPort: 9093
+              name: kafka-internal
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka
+                  key: username
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka
+                  key: password
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper-headless-service.datahangar-stack:2181"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "EXTERNAL:SASL_PLAINTEXT,INTERNAL:PLAINTEXT"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_SASL_ENABLED_MECHANISMS
+              value: "SCRAM-SHA-512"
+            - name: ZOOKEEPER_SASL_ENABLED
+              value: "false"
+            - name: KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+              value: "SCRAM-SHA-512"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "EXTERNAL"
+            - name: KAFKA_OPTS
+              value: "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf"
+          # This is required because the Downward API does not yet support identification of
+          # pod numbering in statefulsets. Thus, we are required to specify a command which
+          # allows us to extract the pod ID for usage as the Kafka Broker ID.
+          # See: https://github.com/kubernetes/kubernetes/issues/31218
+          command:
+          - sh
+          - -exc
+          - |
+            . /tmp/patch_kafka_server_jaas.conf.sh && \
+            export KAFKA_BROKER_ID=${HOSTNAME##*-} && \
+            export KAFKA_ADVERTISED_LISTENERS="EXTERNAL://${POD_NAME}.kafka-headless-service.${POD_NAMESPACE}:9092,INTERNAL://${POD_NAME}.kafka-headless-service.${POD_NAMESPACE}:9093" && \
+            exec /etc/confluent/docker/run
+          volumeMounts:
+            - name: kafka-config-volume
+              mountPath: /etc/kafka/kafka_server_jaas.conf.template
+              subPath: kafka_server_jaas.conf.template
+              readOnly: true
+            - name: kafka-config-volume
+              mountPath: /tmp/patch_kafka_server_jaas.conf.sh
+              subPath: patch_kafka_server_jaas.conf.sh
+              readOnly: true
+      volumes:
+        - name: kafka-config-volume
+          configMap:
+            name: kafka-config-map
