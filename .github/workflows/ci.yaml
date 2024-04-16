@@ -32,7 +32,7 @@ jobs:
       - name: Deploy DataHangar stack
         run: |
           cd /home/runner/work/datahangar/datahangar/datahangar
-          tools/dhctl.py deploy dev
+          tools/dhctl.py -v deploy dev
 
       #Check stack health
       - name: Check health status of the DataHangar stack

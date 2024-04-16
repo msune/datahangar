@@ -35,7 +35,7 @@ def _check_dh_root_folder(path: str):
     if not os.path.isdir(path+"/stack/base") or not os.path.isdir(path+"/stack/overlays"):
         raise typer.Exit(E_MSG + os.path.abspath(path)+" is not a valid datahangar root folder")
 
-def _kctl_exec(_kctl: str, cmd, debug_only: bool=False):
+def _kctl_exec(_kctl: str, cmd, debug_only: bool=True):
     """
     Execute a kubectl, and store the output.
     """
@@ -45,7 +45,7 @@ def _kctl_exec(_kctl: str, cmd, debug_only: bool=False):
         proc = subprocess.run(kctl + cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except Exception as e:
         raise typer.Exit("could not execute '" + str(kctl+cmd) +"'.\n" + proc.stdout +"\nException:\n"+str(e))
-    logging.debug("Executing: "+str(kctl+cmd))
+    logging.debug("[>] "+str(kctl+cmd))
 
     if not debug_only:
         logging.info(proc.stdout.decode())
@@ -57,11 +57,14 @@ def _ns(kctl: str, op: str ):
     """
     create (idempotent) or delete a namespace
     """
+    op_str = "Create" if op == "create" else "Delete"
+    logging.debug(f"[{op_str}] Namespace '{DH_NAMESPACE}'")
+
     if op == "create":
-        logging.debug("Checking if Namespace '%s' exists" % (DH_NAMESPACE))
+        logging.debug(f"Checking if Namespace '{DH_NAMESPACE}' exists")
         if _kctl_exec(kctl, ["get", "namespace", DH_NAMESPACE]).returncode == 0:
             #NS exists
-            logging.debug("Namespace '%s' exists... skipping creation." % (DH_NAMESPACE))
+            logging.debug(f"Namespace '{DH_NAMESPACE}' exists... skipping creation.")
             return
 
     cmd = [op, "namespace", DH_NAMESPACE]
@@ -94,8 +97,10 @@ def _invoke_kustomize_components(path: str, overlay: str, op: str, components : 
         # Find all components
         components = COMPONENTS
 
+    op_str = "Deploy" if op == "apply" else "Undeploy"
     for c_it in components:
         try:
+            logging.debug(f"[{op_str}] "+str(c_it.lstrip("/")))
             _invoke_kustomize(path, overlay, op, c_it, kctl)
         except Exception as e:
             if op == "apply":
@@ -111,6 +116,8 @@ Status backend
 def check_pods(kctl: str):
     proc = _kctl_exec(kctl, ["get", "pods", "-n", DH_NAMESPACE, "-o=json"], True)
     pods = json.loads(proc.stdout.decode('utf-8'))
+
+    logging.debug(f"Checking Pods...")
 
     all_healthy = True
     for pod in pods['items']:
@@ -141,6 +148,8 @@ def check_services(kctl: str):
     proc = _kctl_exec(kctl, ["get", "services", "-n", ns, "-o=json"], True)
     services_info = json.loads(proc.stdout.decode('utf-8'))
 
+    logging.debug(f"Checking services...")
+
     all_healthy = True
     for service in services_info["items"]:
         service_name = service["metadata"]["name"]
@@ -165,10 +174,10 @@ def status(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONE
     Get status of a component or the whole stack
     """
     _check_dh_root_folder(path)
-    logging.debug("Checking status of '%s'" % DH_NAMESPACE)
+    logging.debug(f"Checking status of '{DH_NAMESPACE}'")
 
     if not check_pods(kctl) or not check_services(kctl):
-        raise typer.Exit(E_MSG + "stack NOT healthy!")
+        raise typer.Exit(f"{E_MSG} stack NOT healthy!")
 
 @ctl.command("generate-secrets")
 def gen_secrets(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONENTS_OPT, kctl: str=KCTL_OPT):
