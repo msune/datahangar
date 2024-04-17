@@ -11,6 +11,7 @@ W_MSG="WARNING:"
 
 COMPONENTS=[
     "infra/zookeeper",
+    "infra/postgresql",
     "bus/kafka",
     "collection/nfacctd"
 ]

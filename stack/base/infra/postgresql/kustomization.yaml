@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-secrets-pgpool-admin-pwd.yaml
+  - 00-secrets-repmgr-pwd.yaml
+  - 01-svc-pgpool.yaml
+  - 01-svc-postgres-headless.yaml
+  - 01-svc-postgres.yaml
