@@ -10,6 +10,9 @@ on:
 jobs:
   basic:
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        k8s_version: [v1.27.13, v1.28.9, v1.29.4]
     env:
       KCTL: "minikube kubectl -- "
     steps:
@@ -24,9 +27,11 @@ jobs:
          pip install -r datahangar/tools/requirements.txt
 
       #Start minikube
-      - name: Start minikube
+      - name: "Start minikube - K8s ${{matrix.k8s_version}}"
         id: minikube
         uses: medyagh/setup-minikube@latest
+        with:
+          kubernetes-version: ${{matrix.k8s_version}}
 
       #Deploy stack
       - name: Deploy DataHangar stack
