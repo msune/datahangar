@@ -181,7 +181,7 @@ def _check_jobs_completion(kctl: str):
     for job in jobs_info["items"]:
         job_status = job['status']
         job_name = job['metadata']['name']
-        if job_status['succeeded'] == 0:
+        if "succeeded" not in job_status.keys() or job_status['succeeded'] == 0:
             logging.warning(f"{W_MSG} Job '{job_name}' in namespace '{ns}' has not completed ({job_status}).")
             all_healthy = False
 
