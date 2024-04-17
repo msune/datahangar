@@ -4,6 +4,7 @@ import subprocess
 import os
 import logging
 import json
+from typing_extensions import Annotated
 
 E_MSG="ERROR:"
 W_MSG="WARNING:"
@@ -20,7 +21,7 @@ DH_NAMESPACE="datahangar-stack"
 DEFAULT_KCTL=(os.getenv("KCTL") or "kubectl")
 
 #Reusable arg/opt objects
-OVERLAY_ARG = typer.Argument(None, help="Overlay name")
+OVERLAY_ARG = typer.Argument(..., help="Overlay name")
 COMPONENTS_OPT = typer.Option(None, "--components", "-c", help="Components [default: all]")
 PATH_OPT = typer.Option("./", "--path", "-p", help="DataHangar root folder")
 KCTL_OPT = typer.Option(DEFAULT_KCTL, "--kubectl", "-k", help="kubectl command")
@@ -188,7 +189,7 @@ def _check_jobs_completion(kctl: str):
 Frontend commands
 """
 @ctl.command("status")
-def status(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONENTS_OPT, kctl: str=KCTL_OPT):
+def status(overlay: str = OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONENTS_OPT, kctl: str=KCTL_OPT):
     """
     Get status of a component or the whole stack
     """
@@ -203,7 +204,7 @@ def status(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONE
         raise typer.Exit(f"{E_MSG} stack NOT healthy!")
 
 @ctl.command("generate-secrets")
-def gen_secrets(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONENTS_OPT, kctl: str=KCTL_OPT):
+def gen_secrets(overlay: str = OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONENTS_OPT, kctl: str=KCTL_OPT):
     """
     Generate secrets
     """
@@ -211,7 +212,7 @@ def gen_secrets(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=CO
     logging.info("Hello: I am generating secrets...")
 
 @ctl.command("deploy")
-def deploy(overlay: str=OVERLAY_ARG, path: str = PATH_OPT, components: str = COMPONENTS_OPT, kctl: str = KCTL_OPT):
+def deploy(overlay: str = OVERLAY_ARG, path: str = PATH_OPT, components: str = COMPONENTS_OPT, kctl: str = KCTL_OPT):
     """
     Deploy component(s) or the whole stack
     """
@@ -220,7 +221,7 @@ def deploy(overlay: str=OVERLAY_ARG, path: str = PATH_OPT, components: str = COM
     _invoke_kustomize_components(path, overlay, "apply", components, kctl)
 
 @ctl.command("undeploy")
-def undeploy(overlay: str=OVERLAY_ARG, path: str = PATH_OPT, components: str = COMPONENTS_OPT, kctl: str = KCTL_OPT):
+def undeploy(overlay: str = OVERLAY_ARG, path: str = PATH_OPT, components: str = COMPONENTS_OPT, kctl: str = KCTL_OPT):
     """
     Undeploy component(s) or the whole stack
     """
