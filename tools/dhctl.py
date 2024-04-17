@@ -5,8 +5,8 @@ import os
 import logging
 import json
 
-E_MSG="ERROR: "
-W_MSG="WARNING: "
+E_MSG="ERROR:"
+W_MSG="WARNING:"
 
 COMPONENTS=[
     "infra/zookeeper",
@@ -112,8 +112,7 @@ def _invoke_kustomize_components(path: str, overlay: str, op: str, components : 
 """
 Status backend
 """
-
-def check_pods(kctl: str):
+def _check_pods(kctl: str):
     proc = _kctl_exec(kctl, ["get", "pods", "-n", DH_NAMESPACE, "-o=json"], True)
     pods = json.loads(proc.stdout.decode('utf-8'))
 
@@ -127,6 +126,9 @@ def check_pods(kctl: str):
         conditions = pod['status'].get('conditions', [])
         owner_kind = pod['metadata']['ownerReferences'][0]['kind']
         owner_name = pod['metadata']['ownerReferences'][0]['name']
+
+        if owner_kind == "Job":
+            continue
 
         if phase != 'Running':
             logging.warning(f"{W_MSG} {owner_kind} '{owner_name}' Pod '{name}' in namespace '{namespace}' is not healthy (phase)")
@@ -143,12 +145,12 @@ def check_pods(kctl: str):
             all_healthy = False
     return all_healthy
 
-def check_services(kctl: str):
+def _check_services(kctl: str):
     ns = DH_NAMESPACE
     proc = _kctl_exec(kctl, ["get", "services", "-n", ns, "-o=json"], True)
     services_info = json.loads(proc.stdout.decode('utf-8'))
 
-    logging.debug(f"Checking services...")
+    logging.debug(f"Checking Services...")
 
     all_healthy = True
     for service in services_info["items"]:
@@ -165,6 +167,23 @@ def check_services(kctl: str):
             logging.warning(f"{W_MSG} Service '{service_name}' in namespace '{ns}' is NOT healthy.")
     return all_healthy
 
+def _check_jobs_completion(kctl: str):
+    ns = DH_NAMESPACE
+    proc = _kctl_exec(kctl, ["get", "jobs", "-n", ns, "-o=json"], True)
+    jobs_info = json.loads(proc.stdout.decode('utf-8'))
+
+    logging.debug(f"Checking Jobs...")
+
+    all_healthy = True
+    for job in jobs_info["items"]:
+        job_status = job['status']
+        job_name = job['metadata']['name']
+        if job_status['succeeded'] == 0:
+            logging.warning(f"{W_MSG} Job '{job_name}' in namespace '{ns}' has not completed ({job_status}).")
+            all_healthy = False
+
+    return all_healthy
+
 """
 Frontend commands
 """
@@ -176,7 +195,11 @@ def status(overlay: str=OVERLAY_ARG, path: str=PATH_OPT, components: str=COMPONE
     _check_dh_root_folder(path)
     logging.debug(f"Checking status of '{DH_NAMESPACE}'")
 
-    if not check_pods(kctl) or not check_services(kctl):
+    pods = _check_pods(kctl)
+    svcs = _check_services(kctl)
+    jobs = _check_jobs_completion(kctl)
+
+    if not pods or not svcs or not jobs:
         raise typer.Exit(f"{E_MSG} stack NOT healthy!")
 
 @ctl.command("generate-secrets")
