@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfacctd-workers
+  namespace: datahangar-stack
+  labels:
+    app: nfacctd
+spec:
+  selector:
+    matchLabels:
+      app: nfacctd
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nfacctd
+    spec:
+      containers:
+        - name: nfacctd-worker
+          image: pmacct/nfacctd:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+          args:
+            - ". /tmp/patch_librdkafka_conf.sh && /usr/local/sbin/nfacctd -f /etc/pmacct/nfacctd.conf"
+          env:
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka
+                  key: username
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka
+                  key: password
+          ports:
+            - containerPort: 2111
+          volumeMounts:
+            - name: nfacctd-config-volume
+              mountPath: /tmp/patch_librdkafka_conf.sh
+              subPath: patch_librdkafka_conf.sh
+              readOnly: true
+            - name: nfacctd-config-volume
+              mountPath: /etc/pmacct/nfacctd.conf
+              subPath: nfacctd.conf
+              readOnly: true
+            - name: nfacctd-config-volume
+              mountPath: /etc/pmacct/librdkafka.conf.template
+              subPath: librdkafka.conf.template
+              readOnly: true
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 1G
+            requests:
+              cpu: 500m
+              memory: 256M
+      volumes:
+        - name: nfacctd-config-volume
+          configMap:
+            name: nfacctd-config-map

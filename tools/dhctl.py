@@ -11,7 +11,8 @@ W_MSG="WARNING:"
 
 COMPONENTS=[
     "infra/zookeeper",
-    "bus/kafka"
+    "bus/kafka",
+    "collection/nfacctd"
 ]
 
 #Typer stuff

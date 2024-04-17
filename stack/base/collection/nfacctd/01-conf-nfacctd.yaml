@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nfacctd-config-map
+  namespace: datahangar-stack
+data:
+  patch_librdkafka_conf.sh: |-
+    sed "s/__KAFKA_USERNAME__/${KAFKA_USERNAME}/g" /etc/pmacct/librdkafka.conf.template > /etc/pmacct/librdkafka.conf
+    sed -i "s/__KAFKA_PASSWORD__/${KAFKA_PASSWORD}/g" /etc/pmacct/librdkafka.conf
+  librdkafka.conf.template: |-
+    global,log_level,7
+    global,builtin.features,sasl_plain
+    global,security.protocol,SASL_PLAINTEXT
+    global,sasl.mechanisms,SCRAM-SHA-512
+    global,sasl.username,__KAFKA_USERNAME__
+    global,sasl.password,__KAFKA_PASSWORD__
+  nfacctd.conf: |-
+    nfacctd_ip: 0.0.0.0
+    nfacctd_port: 2111
+    !define the features you want as output
+    aggregate: src_host, dst_host,in_iface, out_iface, timestamp_start, timestamp_end, src_port, dst_port, proto, tos, tcpflags, class
+
+    plugins: kafka
+    kafka_config_file: /etc/pmacct/librdkafka.conf
+    kafka_topic: flowlogs
+    kafka_broker_host: kafka-headless-service.stack.svc.cluster.local
+    kafka_broker_port: 9092
+    kafka_refresh_time: 1

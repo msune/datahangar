@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: flowlog-ingestor-service
+  namespace: datahangar-stack
+spec:
+  selector:
+    app: nfacctd
+  ports:
+  - protocol: UDP
+    port: 2111
+    targetPort: 2111
+  externalTrafficPolicy: Local #Do not SNAT to the service!
+  type: LoadBalancer
