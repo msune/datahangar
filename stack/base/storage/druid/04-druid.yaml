@@ -1,0 +1,390 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: druid-cluster-brokers
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: druid
+      component: broker
+  template:
+    metadata:
+      labels:
+        app: druid
+        component: broker
+      annotations:
+        druid.k8s.enablePatching: "true"
+    spec:
+      serviceAccountName: druid-broker
+      containers:
+        - name: druid
+          image: "apache/druid:28.0.0"
+          imagePullPolicy: IfNotPresent
+          args: [ "broker" ]
+          env:
+          - name: POD_NAME
+            valueFrom:  {fieldRef: {fieldPath: metadata.name}}
+          - name: POD_NAMESPACE
+            valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+          envFrom:
+            - configMapRef:
+                name: druid-common-env-config-map
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          resources:
+            {}
+          volumeMounts:
+            - name: druid-common-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/_common/
+              readOnly: true
+            - name: druid-brokers-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/query/broker/
+              readOnly: true
+            - name: deepstorage-disk
+              mountPath: /data/deepstorage
+      volumes:
+        - name: druid-common-conf-vol
+          configMap:
+            name: druid-common-config-map
+        - name: druid-brokers-conf-vol
+          configMap:
+            name: druid-brokers-config-map
+        - name: deepstorage-disk
+          persistentVolumeClaim:
+            claimName: druid-deepstorage-pv-claim
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: druid-cluster-coordinators
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: coordinator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: druid
+      component: coordinator
+  template:
+    metadata:
+      labels:
+        app: druid
+        component: coordinator
+      annotations:
+        druid.k8s.enablePatching: "true"
+    spec:
+      serviceAccountName: druid-coordinator
+      containers:
+        - name: druid
+          image: "apache/druid:28.0.0"
+          imagePullPolicy: IfNotPresent
+          args: [ "coordinator" ]
+          env:
+          - name: POD_NAME
+            valueFrom:  {fieldRef: {fieldPath: metadata.name}}
+          - name: POD_NAMESPACE
+            valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+          - name: DRUID_METADATA_STORAGE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgresql-ha-postgresql
+                key: password
+          envFrom:
+            - configMapRef:
+                name: druid-common-env-config-map
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          resources:
+            {}
+          volumeMounts:
+            - name: druid-common-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/_common/
+              readOnly: true
+            - name: druid-coordinators-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord/
+              readOnly: true
+            - name: deepstorage-disk
+              mountPath: /data/deepstorage
+      volumes:
+        - name: druid-common-conf-vol
+          configMap:
+            name: druid-common-config-map
+        - name: druid-coordinators-conf-vol
+          configMap:
+            name: druid-coordinators-config-map
+        - name: deepstorage-disk
+          persistentVolumeClaim:
+            claimName: druid-deepstorage-pv-claim
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: druid-cluster-routers
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: druid
+      component: router
+  template:
+    metadata:
+      labels:
+        app: druid
+        component: router
+      annotations:
+        druid.k8s.enablePatching: "true"
+    spec:
+      serviceAccountName: druid-router
+      containers:
+        - name: druid
+          image: "apache/druid:28.0.0"
+          imagePullPolicy: IfNotPresent
+          args: [ "router" ]
+          env:
+          - name: POD_NAME
+            valueFrom:  {fieldRef: {fieldPath: metadata.name}}
+          - name: POD_NAMESPACE
+            valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+          envFrom:
+            - configMapRef:
+                name: druid-common-env-config-map
+          ports:
+            - name: http
+              containerPort: 8088
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: 8088
+          resources:
+            {}
+          volumeMounts:
+            - name: druid-common-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/_common/
+              readOnly: true
+            - name: druid-routers-conf-vol
+              mountPath: /opt/druid/conf/druid/cluster/query/router/
+              readOnly: true
+      volumes:
+        - name: druid-common-conf-vol
+          configMap:
+            name: druid-common-config-map
+        - name: druid-routers-conf-vol
+          configMap:
+            name: druid-routers-config-map
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: druid
+    component: historical
+  name: druid-cluster-historicals
+  namespace: datahangar-stack
+spec:
+  serviceName: druid-historical
+  replicas: 1
+  selector:
+    matchLabels:
+      app: druid
+      component: historical
+  template:
+    metadata:
+      labels:
+        app: druid
+        component: historical
+      annotations:
+        druid.k8s.enablePatching: "true"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: "druid"
+                  release: "release-name"
+                  component: "historical"
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: druid-historical
+      containers:
+      - name: druid
+        args: [ "historical" ]
+        env:
+        - name: POD_NAME
+          valueFrom:  {fieldRef: {fieldPath: metadata.name}}
+        - name: POD_NAMESPACE
+          valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+        envFrom:
+          - configMapRef:
+              name: druid-common-env-config-map
+        resources:
+            {}
+        livenessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/health
+            port: 8088
+        readinessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/health
+            port: 8088
+        image: "apache/druid:28.0.0"
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 8088
+          name: http
+        volumeMounts:
+          - name: druid-common-conf-vol
+            mountPath: /opt/druid/conf/druid/cluster/_common/
+            readOnly: true
+          - name: druid-historicals-conf-vol
+            mountPath: /opt/druid/conf/druid/cluster/data/historical/
+            readOnly: true
+          - name: deepstorage-disk
+            mountPath: /data/deepstorage
+      volumes:
+        - name: druid-common-conf-vol
+          configMap:
+            name: druid-common-config-map
+        - name: druid-historicals-conf-vol
+          configMap:
+            name: druid-historicals-config-map
+        - name: deepstorage-disk
+          persistentVolumeClaim:
+            claimName: druid-deepstorage-pv-claim
+
+  updateStrategy:
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: druid
+    component: middle-manager
+  name: druid-cluster-middle-managers
+  namespace: datahangar-stack
+spec:
+  serviceName: druid-middle-manager
+  replicas: 1
+  selector:
+    matchLabels:
+      app: druid
+      component: middle-manager
+  template:
+    metadata:
+      labels:
+        app: druid
+        component: middle-manager
+      annotations:
+        druid.k8s.enablePatching: "true"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: "druid"
+                  release: "release-name"
+                  component: "middle-manager"
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: druid-middle-manager
+      containers:
+      - name: druid
+        args: [ "middleManager" ]
+        env:
+        - name: POD_NAME
+          valueFrom:  {fieldRef: {fieldPath: metadata.name}}
+        - name: POD_NAMESPACE
+          valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+        envFrom:
+          - configMapRef:
+              name: druid-common-env-config-map
+        resources:
+            {}
+        livenessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/health
+            port: 8088
+        readinessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/health
+            port: 8088
+        image: "apache/druid:28.0.0"
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 8088
+          name: http
+        volumeMounts:
+          - name: druid-common-conf-vol
+            mountPath: /opt/druid/conf/druid/cluster/_common/
+            readOnly: true
+          - name: druid-middlemanagers-conf-vol
+            mountPath: /opt/druid/conf/druid/cluster/data/middleManager/
+            readOnly: true
+          - name: deepstorage-disk
+            mountPath: /data/deepstorage
+      volumes:
+        - name: druid-common-conf-vol
+          configMap:
+            name: druid-common-config-map
+        - name: druid-middlemanagers-conf-vol
+          configMap:
+            name: druid-middlemanagers-config-map
+        - name: deepstorage-disk
+          persistentVolumeClaim:
+            claimName: druid-deepstorage-pv-claim
+  updateStrategy:
+    type: RollingUpdate

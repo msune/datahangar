@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: druid-load-supervisor-task
+  labels:
+    app: load-supervisor-task
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: druid-load-supervisor-task
+    spec:
+      containers:
+      - image: curlimages/curl
+        env:
+          - name: KAFKA_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: username
+          - name: KAFKA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: password
+        command:
+          - "sh"
+          - "/tmp/submit_supervisor_task.sh"
+        volumeMounts:
+          - name: druid-supervisor-ingestor-task
+            mountPath: /tmp/supervisor-kafka-ingest-spec.json.template
+            readOnly: true
+            subPath: supervisor-kafka-ingest-spec.json.template
+          - name: druid-supervisor-ingestor-task
+            mountPath: /tmp/submit_supervisor_task.sh
+            readOnly: true
+            subPath: submit_supervisor_task.sh
+        imagePullPolicy: IfNotPresent
+        name: druid-load-supervisor-task
+      restartPolicy: Never
+      volumes:
+        - name: druid-supervisor-ingestor-task
+          configMap:
+            name: druid-supervisor-task-config-map

@@ -13,7 +13,8 @@ COMPONENTS=[
     "infra/zookeeper",
     "infra/postgresql",
     "bus/kafka",
-    "collection/nfacctd"
+    "collection/nfacctd",
+    "storage/druid"
 ]
 
 #Typer stuff

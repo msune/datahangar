@@ -1,0 +1,219 @@
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: druid-broker
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: broker
+---
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: druid-coordinator
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: coordinator
+---
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: druid-historical
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: historical
+---
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: druid-middle-manager
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: middle-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: druid-router
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: router
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-broker
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: broker
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-coordinator
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: coordinator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-historical
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: historical
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-middle-manager
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: middle-manager
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: druid-router
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: router
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+    verbs:
+      - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: druid-broker
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: broker
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: druid-broker
+subjects:
+  - kind: ServiceAccount
+    name: druid-broker
+    namespace: datahangar-stack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: druid-coordinator
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: coordinator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: druid-coordinator
+subjects:
+  - kind: ServiceAccount
+    name: druid-coordinator
+    namespace: datahangar-stack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: druid-historical
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: historical
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: druid-historical
+subjects:
+  - kind: ServiceAccount
+    name: druid-historical
+    namespace: datahangar-stack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: druid-middle-manager
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: middle-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: druid-middle-manager
+subjects:
+  - kind: ServiceAccount
+    name: druid-middle-manager
+    namespace: datahangar-stack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: druid-router
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: router
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: druid-router
+subjects:
+  - kind: ServiceAccount
+    name: druid-router
+    namespace: datahangar-stack

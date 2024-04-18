@@ -1,0 +1,28 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: druid-deepstorage-pv-volume
+  namespace: datahangar-stack
+  labels:
+    app: druid
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/deepstorage"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: druid-deepstorage-pv-claim
+  namespace: datahangar-stack
+  labels:
+    app: druid
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi

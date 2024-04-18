@@ -1,0 +1,96 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: druid-cluster-brokers
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: broker
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8088
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: druid
+    component: broker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: druid-cluster-coordinators
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: coordinator
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8088
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: druid
+    component: coordinator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: druid-cluster-historicals
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: historical
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8088
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: druid
+    component: historical
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: druid-cluster-middle-managers
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: middle-manager
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8088
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: druid
+    component: middle-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: druid-cluster-routers
+  namespace: datahangar-stack
+  labels:
+    app: druid
+    component: router
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8088
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: druid
+    component: router
+---
+

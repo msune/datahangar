@@ -1,0 +1,273 @@
+#Configuration optimized for a development environment
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-common-env-config-map
+  namespace: datahangar-stack
+data:
+  DRUID_USE_CONTAINER_IP: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-common-config-map
+  namespace: datahangar-stack
+data:
+  common.runtime.properties: |-
+    #Default port for all nodes 8088
+    druid.port=8088
+    druid.plaintextPort=8088
+
+    #Web server
+    druid.server.http.numThreads=10
+
+    #Emitter
+    druid.emitter=noop
+    druid.emitter.http.recipientBaseUrl=http://druid_exporter_url:druid_exporter_port/druid
+    druid.emitter.logging.logLevel=debug
+
+    #Extensions
+    druid.extensions.loadList=[ "druid-avro-extensions", "druid-lookups-cached-global", "druid-s3-extensions", "druid-hdfs-storage", "druid-kafka-indexing-service", "druid-datasketches","druid-multi-stage-query", "postgresql-metadata-storage" ]
+
+    #Indexer
+    druid.indexer.logs.directory=/opt/shared/indexing-logs
+    druid.indexer.logs.type=file
+
+    #Metadata
+    druid.metadata.storage.connector.connectURI=jdbc:postgresql://postgres-ha-pgpool-service.datahangar-stack.svc.cluster.local:5432/druid
+    druid.metadata.storage.connector.user=druid
+    druid.metadata.storage.connector.password={ "type": "environment", "variable": "DRUID_METADATA_STORAGE_PASSWORD" }
+    druid.metadata.storage.type=postgresql
+
+    # Processing threads and buffers
+    druid.processing.numThreads=1
+    druid.processing.buffer.sizeBytes=500MiB
+    druid.processing.numMergeBuffers=1
+    druid.processing.tmpDir=var/druid/processing
+    druid.indexer.fork.property.druid.processing.numThreads=1
+    druid.indexer.fork.property.druid.processing.numMergeBuffers=1
+    druid.indexer.fork.property.druid.processing.buffer.sizeBytes=500MiB
+
+    #Deep storage
+    druid.storage.storageDirectory=/data/deepstorage
+    druid.storage.type=local
+
+    #Zookeeper
+    druid.zk.service.enabled=true
+    druid.zk.service.host=zookeeper-headless-service.datahangar-stack.svc.cluster.local
+
+  log4j2.xml: |-
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <!--<Configuration status="TRACE">
+        <Appenders>
+            <Http name="Http" url="https://demo.parseable.io/api/v1/ingest" method="POST">
+              <Property name="Authorization" value="Basic YWRtaW46YWRtaW4=" />
+              <Property name="X-P-Stream" value="druide2e" />
+              <Property name="Accept" value="application/json" />
+              <Property name="X-Java-Runtime" value="$${java:runtime}" />
+              <JsonLayout properties="true"/>
+            </Http>
+        </Appenders>
+        <Loggers>
+            <Root level="info">
+                <AppenderRef ref="Http"/>
+            </Root>
+        </Loggers>
+    </Configuration>-->
+    <Configuration status="WARN">
+            <Appenders>
+                    <Console name="Console" target="SYSTEM_OUT">
+                            <PatternLayout pattern="%d{ISO8601} %p [%t] %c - %m%n"/>
+                    </Console>
+            </Appenders>
+            <Loggers>
+                    <Root level="info">
+                            <AppenderRef ref="Console"/>
+                    </Root>
+                    <Logger name="org.apache.druid.jetty.RequestLog" additivity="false" level="DEBUG">
+                            <AppenderRef ref="Console"/>
+                    </Logger>
+            </Loggers>
+    </Configuration>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-coordinators-config-map
+  namespace: datahangar-stack
+data:
+  jvm.config: |-
+    -server
+    -Xms128m
+    -Xmx512m
+    -XX:+ExitOnOutOfMemoryError
+    -XX:+UseG1GC
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.io.tmpdir=var/tmp
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+    -Dderby.stream.error.file=var/druid/derby.log
+  main.config: |-
+    org.apache.druid.cli.Main server coordinator
+  runtime.properties: |-
+    #Role
+    druid.service=druid/coordinator
+
+    #Coordinator specifics
+    druid.coordinator.startDelay=PT10S
+    druid.coordinator.period=PT5S
+    druid.coordinator.asOverlord.enabled=true
+    druid.coordinator.asOverlord.overlordService=druid/overlord
+
+    #Indexer
+    druid.indexer.queue.startDelay=PT5S
+    druid.indexer.storage.type=metadata
+
+    #Segments
+    druid.manager.segments.pollDuration=PT5S
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-middlemanagers-config-map
+  namespace: datahangar-stack
+data:
+  jvm.config: |-
+    -server
+    -Xms128m
+    -Xmx1g
+    -XX:MaxDirectMemorySize=2g
+    -XX:+ExitOnOutOfMemoryError
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.io.tmpdir=var/tmp
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  main.config: |-
+    org.apache.druid.cli.Main server middleManager
+  runtime.properties: |-
+    #Role
+    druid.service=druid/middleManager
+    druid.worker.capacity=4
+    druid.worker.baseTaskDirs=[\"var/druid/task\"]
+
+    # Task launch parameters
+    druid.indexer.runner.javaOptsArray=[ "-server", "-Xms256m", "-Xmx512m", "-XX:MaxDirectMemorySize=512m", "-Duser.timezone=UTC", "-Dfile.encoding=UTF-8", "-XX:+ExitOnOutOfMemoryError", "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager" ]
+
+    #Processing specifics
+    druid.indexer.fork.property.druid.processing.numThreads=1
+    druid.indexer.fork.property.druid.processing.numMergeBuffers=1
+    druid.indexer.fork.property.druid.processing.buffer.sizeBytes=100MiB
+
+    # Hadoop indexing
+    druid.indexer.task.hadoopWorkingPath=var/druid/hadoop-tmp
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-routers-config-map
+  namespace: datahangar-stack
+data:
+  jvm.config: |-
+    -server
+    -Xms128m
+    -Xmx512m
+    -XX:+UseG1GC
+    -XX:MaxDirectMemorySize=512m
+    -XX:+ExitOnOutOfMemoryError
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.io.tmpdir=var/tmp
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  main.config: |-
+    org.apache.druid.cli.Main server router
+  runtime.properties: |-
+    #Role
+    druid.service=druid/router
+
+    # HTTP proxy
+    druid.router.http.numConnections=10
+    druid.router.http.readTimeout=PT5M
+    druid.router.http.numMaxThreads=10
+
+    # Service discovery
+    druid.router.defaultBrokerServiceName=druid/broker
+    druid.router.coordinatorServiceName=druid/coordinator
+
+    # Management proxy to coordinator / overlord: required for unified web console.
+    druid.router.managementProxy.enabled=true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-brokers-config-map
+  namespace: datahangar-stack
+data:
+  jvm.config: |-
+    -server
+    -Xms512m
+    -Xmx512m
+    -XX:MaxDirectMemorySize=2g
+    -XX:+ExitOnOutOfMemoryError
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.io.tmpdir=var/tmp
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  main.config: |-
+    org.apache.druid.cli.Main server broker
+  runtime.properties: |-
+    #Role
+    druid.service=druid/broker
+
+    # HTTP server settings
+    druid.broker.http.numConnections=5
+
+    # Processing threads and buffers
+    druid.processing.buffer.sizeBytes=1
+    druid.processing.numMergeBuffers=1
+    druid.processing.numThreads=1
+    druid.sql.enable=true
+
+    # Query cache disabled -- push down caching and merging instead
+    druid.broker.cache.useCache=false
+    druid.broker.cache.populateCache=false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: druid-historicals-config-map
+  namespace: datahangar-stack
+data:
+  jvm.config: |-
+    -server
+    -Xms128m
+    -Xmx512m
+    -XX:MaxDirectMemorySize=2g
+    -XX:+ExitOnOutOfMemoryError
+    -Duser.timezone=UTC
+    -Dfile.encoding=UTF-8
+    -Djava.io.tmpdir=var/tmp
+    -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  main.config: |-
+    org.apache.druid.cli.Main server historical
+  runtime.properties: |-
+    #Role
+    druid.service=druid/historical
+
+    # HTTP server settings
+    druid.server.http.numThreads=5
+
+    # Processing threads and buffers
+    druid.processing.buffer.sizeBytes=536870912
+    druid.processing.numMergeBuffers=1
+    druid.processing.numThreads=1
+
+    # Segment storage
+    druid.segmentCache.locations=[{"path":"var/druid/segment-cache","maxSize":"300g"}]
+
+    # Query cache
+    druid.historical.cache.useCache=true
+    druid.historical.cache.populateCache=true
+    druid.cache.type=caffeine
+    druid.cache.sizeInBytes=256MiB
