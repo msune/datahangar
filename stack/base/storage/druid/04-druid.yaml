@@ -39,12 +39,12 @@ spec:
               containerPort: 8088
               protocol: TCP
           livenessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
           readinessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
@@ -116,12 +116,12 @@ spec:
               containerPort: 8088
               protocol: TCP
           livenessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
           readinessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
@@ -188,12 +188,12 @@ spec:
               containerPort: 8088
               protocol: TCP
           livenessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
           readinessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
             httpGet:
               path: /status/health
               port: 8088
@@ -265,12 +265,12 @@ spec:
         resources:
             {}
         livenessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           httpGet:
             path: /status/health
             port: 8088
         readinessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           httpGet:
             path: /status/health
             port: 8088
@@ -353,12 +353,12 @@ spec:
         resources:
             {}
         livenessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           httpGet:
             path: /status/health
             port: 8088
         readinessProbe:
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           httpGet:
             path: /status/health
             port: 8088
