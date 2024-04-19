@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: turnilo
+  name: turnilo
+  namespace: datahangar-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: turnilo
+  template:
+    metadata:
+      labels:
+        app: turnilo
+    spec:
+      containers:
+        - image: ghcr.io/datahangar/turnilo:1.40.2
+          command:
+            - "/nodejs/bin/node"
+            - "bin/turnilo"
+            - "run-config"
+            - "/tmp/config.yaml"
+          imagePullPolicy: IfNotPresent
+          name: turnilo
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: turnilo-volume
+              mountPath: /tmp/
+              readOnly: true
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 1G
+            requests:
+              cpu: 500m
+              memory: 256M
+      volumes:
+        - name: turnilo-volume
+          configMap:
+            name: ui-turnilo-config-map
