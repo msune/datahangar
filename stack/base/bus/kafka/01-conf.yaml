@@ -7,7 +7,7 @@ data:
   zk_create_scram_user_pwd.sh: |-
     set -e
     set +x
-    kafka-configs --zookeeper zookeeper-headless-service.datahangar-stack:2181 --alter \
+    kafka-configs --zookeeper zookeeper-headless-service:2181 --alter \
     --add-config "SCRAM-SHA-512=[password=${KAFKA_PASSWORD}]" \
     --entity-type users \
     --entity-name ${KAFKA_USERNAME}

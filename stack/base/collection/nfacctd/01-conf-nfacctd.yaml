@@ -23,6 +23,6 @@ data:
     plugins: kafka
     kafka_config_file: /etc/pmacct/librdkafka.conf
     kafka_topic: flowlogs
-    kafka_broker_host: kafka-headless-service.stack.svc.cluster.local
+    kafka_broker_host: kafka-headless-service
     kafka_broker_port: 9092
     kafka_refresh_time: 1
