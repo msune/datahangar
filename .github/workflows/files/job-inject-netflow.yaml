@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: inject-netflow
+  labels:
+    app: inject-netflow
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: inject-netflow
+    spec:
+      containers:
+      - image: ghcr.io/datahangar/netflow-generator:v0.0.2
+        args: ["-n", "1024", "-p", "2111", "flowlogs-ingestor-internal"]
+        imagePullPolicy: IfNotPresent
+        name: druid-load-supervisor-task
+      restartPolicy: Never

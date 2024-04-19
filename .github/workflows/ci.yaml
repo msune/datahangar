@@ -1,7 +1,6 @@
 name: ci
 
 on:
-  workflow_dispatch:
   push:
   pull_request:
   schedule:
@@ -15,18 +14,18 @@ jobs:
         k8s_version: [v1.27.13, v1.28.9, v1.29.4]
     env:
       KCTL: "minikube kubectl -- "
+      N_RECORDS: 1024
     steps:
-      #Clone datahangar
       - name: Checkout datahangar
         uses: actions/checkout@v4
         with:
           path: datahangar
 
-      - name: Install python3 dependencies
+      - name: Install dependencies
         run: |
-         pip install -r datahangar/tools/requirements.txt
+          apt-get update && apt-get install -y jq
+          pip install -r datahangar/tools/requirements.txt
 
-      #Start minikube
       - name: "Start minikube - K8s ${{matrix.k8s_version}}"
         id: minikube
         uses: medyagh/setup-minikube@latest
@@ -35,14 +34,29 @@ jobs:
           cpus: 'max'
           memory: 12G
 
-      #Deploy stack
       - name: Deploy DataHangar stack
         run: |
           cd /home/runner/work/datahangar/datahangar/datahangar
           tools/dhctl.py -v deploy dev
 
-      #Check stack health
       - name: Check health status of the DataHangar stack
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 40
+          retry_wait_seconds: 15
+          shell: bash
+          command: /home/runner/work/datahangar/datahangar/datahangar/tools/dhctl.py status dev -p /home/runner/work/datahangar/datahangar/datahangar/
+
+      - name: Inject 1024 netflow records
+        run: |
+          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/job-inject-netflow.yaml
+
+      - name: Launch count rows in TS_DB job
+        run: |
+          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/count-db-records.yaml
+
+      - name: Check that number of rows in TS_DB matches injected traffic
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 3
