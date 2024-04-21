@@ -1,7 +1,21 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: flowlog-ingestor-service
+  name: flowlogs-ingestor-internal
+  namespace: datahangar-stack
+spec:
+  selector:
+    app: nfacctd
+  ports:
+  - protocol: UDP
+    port: 2111
+    targetPort: 2111
+  type: ClusterIP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: flowlog-ingestor
   namespace: datahangar-stack
 spec:
   selector:
