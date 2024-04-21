@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - image: ghcr.io/datahangar/netflow-generator:v0.0.2
-        args: ["-n", "1024", "-p", "2111", "flowlogs-ingestor-internal"]
+        args: ["-n", "1024", "-p", "2055", "flowlogs-ingestor-internal"]
         imagePullPolicy: IfNotPresent
         name: druid-load-supervisor-task
       restartPolicy: Never

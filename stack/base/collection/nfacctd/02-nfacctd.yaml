@@ -36,7 +36,12 @@ spec:
                   name: kafka
                   key: password
           ports:
-            - containerPort: 2111
+            - name: flowlogs
+              protocol: UDP
+              containerPort: 2055
+            - name: bgp
+              protocol: TCP
+              containerPort: 179
           volumeMounts:
             - name: nfacctd-config-volume
               mountPath: /tmp/patch_librdkafka_conf.sh

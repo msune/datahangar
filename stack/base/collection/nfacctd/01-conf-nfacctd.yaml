@@ -15,11 +15,15 @@ data:
     global,sasl.username,__KAFKA_USERNAME__
     global,sasl.password,__KAFKA_PASSWORD__
   nfacctd.conf: |-
+    !Flowlogs
     nfacctd_ip: 0.0.0.0
-    nfacctd_port: 2111
+    nfacctd_port: 2055
     !define the features you want as output
     aggregate: src_host, dst_host,in_iface, out_iface, timestamp_start, timestamp_end, src_port, dst_port, proto, tos, tcpflags, class
-
+    !BGP
+    bgp_daemon: true
+    bgp_daemon_port: 179
+    !Plugins
     plugins: kafka
     kafka_config_file: /etc/pmacct/librdkafka.conf
     kafka_topic: flowlogs

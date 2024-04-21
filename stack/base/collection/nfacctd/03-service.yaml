@@ -7,22 +7,34 @@ spec:
   selector:
     app: nfacctd
   ports:
-  - protocol: UDP
-    port: 2111
-    targetPort: 2111
+  - name: flowlogs
+    protocol: UDP
+    port: 2055
+    targetPort: 2055
+  - name: bgp
+    protocol: TCP
+    port: 179
+    targetPort: 179
   type: ClusterIP
+  sessionAffinity: ClientIP
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: flowlog-ingestor
+  name: flowlogs-ingestor
   namespace: datahangar-stack
 spec:
   selector:
     app: nfacctd
   ports:
-  - protocol: UDP
-    port: 2111
-    targetPort: 2111
-  externalTrafficPolicy: Local #Do not SNAT to the service!
+  - name: flowlogs
+    protocol: UDP
+    port: 2055
+    targetPort: 2055
+  - name: bgp
+    protocol: TCP
+    port: 179
+    targetPort: 179
   type: LoadBalancer
+  externalTrafficPolicy: Local #Do not SNAT to the service!
+  sessionAffinity: ClientIP
