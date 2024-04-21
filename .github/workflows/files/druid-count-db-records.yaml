@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: count-db-records-task-config-map
+  name: druid-count-db-records-task-config-map
   namespace: datahangar-stack
 data:
   count_db_records.sh: |-
@@ -23,31 +23,31 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: count-db-records
+  name: druid-count-db-records
   labels:
-    app: count-db-records
+    app: druid-count-db-records
   namespace: datahangar-stack
 spec:
   completions: 1
   parallelism: 1
   template:
     metadata:
-      name: count-db-records
+      name: druid-count-db-records
     spec:
       containers:
       - image: debian:bookworm-slim
         imagePullPolicy: IfNotPresent
-        name: count-db-records
+        name: druid-count-db-records
         command: ["bash", "-c", "/tmp/count_db_records.sh 1024"]
         volumeMounts:
-          - name: count-db-records-task
+          - name: druid-count-db-records-task
             mountPath: /tmp/count_db_records.sh
             subPath: count_db_records.sh
             readOnly: true
         imagePullPolicy: IfNotPresent
       restartPolicy: Never
       volumes:
-        - name: count-db-records-task
+        - name: druid-count-db-records-task
           configMap:
-            name: count-db-records-task-config-map
+            name: druid-count-db-records-task-config-map
             defaultMode: 0777

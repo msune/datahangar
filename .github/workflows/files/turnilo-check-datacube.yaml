@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: turnilo-check-datacube-task-config-map
+  namespace: datahangar-stack
+data:
+  check_sources.sh: |-
+    set -e
+    apt-get update && apt-get install -y curl jq
+    EXPECTED_DATACUBE=$1
+    FILE=/tmp/sources.json
+    curl "http://ui-turnilo-service:9090/turnilo/sources" -o ${FILE}
+    DATACUBE=$(cat ${FILE} | jq '.["dataCubes"][0]["source"]' | tr -d \")
+    echo "Datacube '${DATACUBE}', expected '${EXPECTED_DATACUBE}'"
+    [[ "${DATACUBE}" == "${EXPECTED_DATACUBE}" ]]
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: turnilo-check-datacube
+  labels:
+    app: turnilo-check-datacube
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: turnilo-check-datacube
+    spec:
+      containers:
+      - image: debian:bookworm-slim
+        imagePullPolicy: IfNotPresent
+        name: turnilo-check-datacube
+        command: ["bash", "-c", "/tmp/check_sources.sh networkFlows"]
+        volumeMounts:
+          - name: turnilo-check-datacube-task
+            mountPath: /tmp/check_sources.sh
+            subPath: check_sources.sh
+            readOnly: true
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+      volumes:
+        - name: turnilo-check-datacube-task
+          configMap:
+            name: turnilo-check-datacube-task-config-map
+            defaultMode: 0777

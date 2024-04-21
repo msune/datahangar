@@ -52,9 +52,13 @@ jobs:
         run: |
           minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/job-inject-netflow.yaml
 
-      - name: Launch count rows in TS_DB job
+      - name: Launch count rows in Druid TS DB job
         run: |
-          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/count-db-records.yaml
+          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/druid-count-db-records.yaml
+
+      - name: Launch check datacubes in Turnilo job
+        run: |
+          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/turnilo-check-datacube.yaml
 
       - name: Check that number of rows in TS_DB matches injected traffic
         uses: nick-fields/retry@v3
