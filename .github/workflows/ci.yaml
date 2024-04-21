@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         k8s_version: [v1.27.13, v1.28.9, v1.29.4]
+        db: [druid, clickhouse]
     env:
       KCTL: "minikube kubectl -- "
       N_RECORDS: 1024
@@ -34,9 +35,12 @@ jobs:
           cpus: 'max'
           memory: 12G
 
-      - name: Deploy DataHangar stack
+      - name: "Deploy DataHangar stack (DB: ${{matrix.db}})"
         run: |
           cd /home/runner/work/datahangar/datahangar/datahangar
+          rm stack/overlays/dev/storage/db
+          ln -sf ${{matrix.db}} stack/overlays/dev/storage/db
+          ls -la stack/overlays/dev/storage
           tools/dhctl.py -v deploy dev
 
       - name: Check health status of the DataHangar stack
@@ -52,13 +56,16 @@ jobs:
         run: |
           minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/job-inject-netflow.yaml
 
-      - name: Launch count rows in Druid TS DB job
+      - name: Launch count rows in TS DB job
         run: |
-          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/druid-count-db-records.yaml
+          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/count-db-records.yaml
 
       - name: Launch check datacubes in Turnilo job
         run: |
-          minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/turnilo-check-datacube.yaml
+          #Web ui is only supported with Druid DB
+          if [[ "${{matrix.db}}" == "druid" ]]; then
+            minikube kubectl -- apply -f /home/runner/work/datahangar/datahangar/datahangar/.github/workflows/files/turnilo-check-datacube.yaml
+          fi
 
       - name: Check that number of rows in TS_DB matches injected traffic
         uses: nick-fields/retry@v3

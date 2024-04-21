@@ -1,0 +1,14 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: clickhouse-deepstorage-pv-volume
+  namespace: datahangar-stack
+  labels:
+    app: clickhouse
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/data/clickhouse/storage"

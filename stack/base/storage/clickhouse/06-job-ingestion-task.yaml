@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: clickhouse-load-ingestion-task
+  labels:
+    app: load-ingestion-task
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: clickhouse-load-ingestion-task
+    spec:
+      containers:
+      - image: clickhouse/clickhouse-server
+        env:
+          - name: CLICKHOUSE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: clickhouse
+                key: admin-password
+        command: ["/bin/bash"]
+        args: ["-c", "clickhouse-client -h clickhouse-headless-service  --queries-file /tmp/networkFlows_script.sql"]
+        volumeMounts:
+          - name: clickhouse-ingestion-task
+            mountPath: /tmp/networkFlows_script.sql
+            readOnly: true
+            subPath: networkFlows_script.sql
+        imagePullPolicy: IfNotPresent
+        name: clickhouse-load-ingestion-task
+      restartPolicy: Never
+      volumes:
+        - name: clickhouse-ingestion-task
+          configMap:
+            name: clickhouse-ingestion-task-config-map

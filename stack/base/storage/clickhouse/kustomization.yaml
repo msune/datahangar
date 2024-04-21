@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-rbac.yaml
+  - 00-secrets-clickhouse.yaml
+  - 01-services.yaml
+  - 02-pvc.yaml
+  - 03-conf-clickhouse.yaml
+  - 03-conf-scripts-clickhouse.yaml
+  - 04-clickhouse.yaml
+  - 05-conf-job-ingestion-task.yaml
+  - 06-job-ingestion-task.yaml

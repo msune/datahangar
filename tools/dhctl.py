@@ -14,7 +14,7 @@ COMPONENTS=[
     "infra/postgresql",
     "bus/kafka",
     "collection/nfacctd",
-    "storage/druid",
+    "storage/db",
     "ui/turnilo"
 ]
 

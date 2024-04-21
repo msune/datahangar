@@ -1,53 +1,68 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: druid-count-db-records-task-config-map
+  name: count-db-records-task-config-map
   namespace: datahangar-stack
 data:
   count_db_records.sh: |-
     set -e
     apt-get update && apt-get install -y curl jq
     N_RECORDS=$1
-    FILE=/tmp/records.json
-    curl "http://druid-cluster-routers:8088/druid/v2/sql" --header 'Content-Type: application/json' --data '{
+
+    #Detect DB
+    if [[ $(curl -s clickhouse-service:8123) ]]; then
+      DB="clickhouse";
+    else
+      DB="druid";
+    fi
+    echo "Detected DB: ${DB}"
+
+    #Query
+    if [[ "$DB" == "druid" ]]; then
+      FILE=/tmp/records.json
+      curl "http://druid-cluster-routers:8088/druid/v2/sql" --header 'Content-Type: application/json' --data '{
         "query": "select COUNT(*) from networkFlows",
         "context" : {"sqlQueryId" : "request01"},
         "header" : true,
         "typesHeader" : true,
         "sqlTypesHeader" : true
-    }' > ${FILE}
-    ROWS=$(cat ${FILE} | jq '.[1]["EXPR$0"]')
+      }' > ${FILE}
+      ROWS=$(cat ${FILE} | jq '.[1]["EXPR$0"]')
+    elif [[ "${DB}" == "clickhouse" ]]; then
+      ROWS=$(echo "SELECT count() FROM networkFlows;" | curl 'default:FoolishPassword@clickhouse-service:8123/' --data-binary @-)
+    fi
+
     echo "Read '${ROWS}' rows from a total of '${N_RECORDS}' sent records"
     [[ "${ROWS}" == "${N_RECORDS}" ]]
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: druid-count-db-records
+  name: count-db-records
   labels:
-    app: druid-count-db-records
+    app: count-db-records
   namespace: datahangar-stack
 spec:
   completions: 1
   parallelism: 1
   template:
     metadata:
-      name: druid-count-db-records
+      name: count-db-records
     spec:
       containers:
       - image: debian:bookworm-slim
         imagePullPolicy: IfNotPresent
-        name: druid-count-db-records
+        name: count-db-records
         command: ["bash", "-c", "/tmp/count_db_records.sh 1024"]
         volumeMounts:
-          - name: druid-count-db-records-task
+          - name: count-db-records-task
             mountPath: /tmp/count_db_records.sh
             subPath: count_db_records.sh
             readOnly: true
         imagePullPolicy: IfNotPresent
       restartPolicy: Never
       volumes:
-        - name: druid-count-db-records-task
+        - name: count-db-records-task
           configMap:
-            name: druid-count-db-records-task-config-map
+            name: count-db-records-task-config-map
             defaultMode: 0777
