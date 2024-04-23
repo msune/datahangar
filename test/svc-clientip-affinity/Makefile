@@ -13,13 +13,13 @@ _start_nfacctd:
 	$(KCTL) -n $(NS) apply -f nfacctd-mock.yaml
 	$(KCTL) -n $(NS) apply -f 03-service.yaml
 _add_ips:
-	@for (( i=1; i<=$(N_ROUTERS); i++ )); do sudo ip addr add 10.0.$$i.1/32 dev lo; done
+	@for (( i=1; i<=$(N_ROUTERS); i++ )); do sudo ip addr add 10.$$i.$$i.1/32 dev lo; done
 _run_routers:
 	while [[ "$$IP_LB_SVC" == "" ]]; do \
-		IP_LB_SVC=`$(KCTL) -n $(NS) get svc flowlogs-ingestor-internal -o jsonpath="{.spec.clusterIP}"`; \
+		IP_LB_SVC=`$(KCTL) -n $(NS) get svc flowlogs-ingestor -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`; \
 	done; \
 	for (( i=1; i<=$(N_ROUTERS); i++ )); do \
-		(./router_mock.py $$IP_LB_SVC 10.0.$$i.1 &); \
+		(./router_mock.py $$IP_LB_SVC 10.$$i.$$i.1 &); \
 	done
 
 _check_outputs:
@@ -31,4 +31,4 @@ _stop_routers:
 _stop_nfacctd:
 	$(KCTL) delete namespace $(NS) || true
 _delete_ips:
-	@for (( i=1; i<=$(N_ROUTERS); i++ )); do sudo ip addr del 10.0.$$i.1/32 dev lo; done || true
+	@for (( i=1; i<=$(N_ROUTERS); i++ )); do sudo ip addr del 10.$$i.$$i.1/32 dev lo; done || true

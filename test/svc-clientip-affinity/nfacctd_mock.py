@@ -43,10 +43,11 @@ def tcp_listen():
 
                 # Add the client socket to the dictionary
                 clients[c.fileno()] = c
-                addresses[address[0]] = c
+                with lock:
+                    addresses[address[0]] = c
 
             # Data available to read
-            elif (event & select.EPOLLIN) or (event & select.EPOLLERR):
+            elif (event & select.EPOLLIN):
                 c = clients[fileno]
                 data = c.recv(1024)
 
