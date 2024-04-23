@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfacctd-mock-workers
+  namespace: datahangar-stack
+  labels:
+    app: nfacctd
+spec:
+  selector:
+    matchLabels:
+      app: nfacctd
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: nfacctd
+    spec:
+      containers:
+        - name: nfacctd-mock-worker
+          image: python:3.9.19-bookworm
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          command:
+            - python3
+            - /tmp/nfacctd_mock.py
+          ports:
+            - name: flowlogs
+              protocol: UDP
+              containerPort: 2055
+            - name: bgp
+              protocol: TCP
+              containerPort: 179
+          volumeMounts:
+            - name: nfacctd-mock-binary-volume
+              mountPath: /tmp/nfacctd_mock.py
+              subPath: nfacctd_mock.py
+              readOnly: true
+      volumes:
+        - name: nfacctd-mock-binary-volume
+          configMap:
+            name: nfacctd-mock-binary
