@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 .PHONY: delete_ips
-N_ROUTERS:=32
+N_ROUTERS:=1
 
 KCTL:=minikube kubectl --
 NS:=datahangar-stack
