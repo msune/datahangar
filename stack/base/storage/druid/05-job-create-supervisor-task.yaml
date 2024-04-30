@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: druid-load-supervisor-tasks
+  labels:
+    app: load-supervisor-tasks
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: druid-load-supervisor-tasks
+    spec:
+      containers:
+      - image: python:3.9.19-bookworm
+        env:
+          - name: KAFKA_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: username
+          - name: KAFKA_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: kafka
+                key: password
+        command: ["bash", "-c", "pip3 install jinja2 requests && cd tmp/ && python3 -u submit_kafka_ingest_tasks.py"]
+        volumeMounts:
+          - name: datahangar-config-volume
+            mountPath: /etc/datahangar
+            readOnly: true
+          - name: datahangar-dataprofiles-config-volume
+            mountPath: /etc/datahangar/data-profiles/
+            readOnly: true
+          - name: druid-supervisor-ingestor-tasks
+            mountPath: /tmp/
+            readOnly: true
+        imagePullPolicy: IfNotPresent
+        name: druid-load-supervisor-tasks
+      restartPolicy: Never
+      volumes:
+        - name: datahangar-config-volume
+          configMap:
+            name: datahangar-config-map
+        - name: datahangar-dataprofiles-config-volume
+          configMap:
+            name: datahangar-dataprofiles-config-map
+        - name: druid-supervisor-ingestor-tasks
+          configMap:
+            name: druid-supervisor-tasks-config-map

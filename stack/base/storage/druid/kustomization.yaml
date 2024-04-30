@@ -7,5 +7,15 @@ resources:
   - 02-conf.yaml
   - 03-services.yaml
   - 04-druid.yaml
-  - 05-conf-job-supervisor-task.yaml
-  - 06-job-create-supervisor-task.yaml
+  - 05-job-create-supervisor-task.yaml
+
+generatorOptions:
+  annotations:
+    generated: "true"
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: druid-supervisor-tasks-config-map
+    namespace: datahangar-stack
+    files:
+      - files/submit_kafka_ingest_tasks.py
+      - files/kafka_ingest_spec.json.j2
