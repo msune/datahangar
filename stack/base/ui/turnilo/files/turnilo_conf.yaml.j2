@@ -1,0 +1,94 @@
+serverRoot: turnilo
+customization:
+  timezones:
+  - America/Juneau
+  - America/Los_Angeles
+  - America/Yellowknife
+  - America/Phoenix
+  - America/Denver
+  - America/Mexico_City
+  - America/Chicago
+  - America/New_York
+  - America/Argentina/Buenos_Aires
+  - Etc/UTC
+  - Asia/Jerusalem
+  - Europe/Paris
+  - Asia/Kathmandu
+  - Asia/Hong_Kong
+  - Asia/Seoul
+  - Pacific/Guam
+clusters:
+  - name: druid
+    type: druid
+    url: http://druid-cluster-routers:8088
+    timeout: 40000
+    sourceListScan: false #auto
+    sourceListRefreshOnLoad: false
+    sourceListRefreshInterval: 5000
+    sourceReintrospectOnLoad: false
+    sourceReintrospectInterval: 5000
+    #introspectionStrategy: segment-metadata-fallback
+
+dataCubes:
+  {% for name, c in data_cubes.items() -%}
+  - name: {{name}}
+    title: {{c["description"]}}
+    clusterName: druid
+    source: {{c["db_table_name"]}}
+
+    refreshRule:
+      rule: query
+
+    defaultTimezone: Etc/UTC
+    defaultDuration: P1D
+    defaultSortMeasure: bytes
+    defaultSelectedMeasures: []
+
+    defaultPinnedDimensions: []
+    introspection: autofill-all
+    attributeOverrides:
+    dimensions:
+      - name: time
+        title: Time
+        kind: time
+        formula: $__time
+
+      - name: flow_data
+        title: Flow data
+        dimensions:
+          {%for name,elem in data_cubes[name]["cols"].items() -%}
+          - name: {{name}}
+            title: {{elem["title"]}}
+            formula: ${{name}}
+          {% endfor %}
+{#
+      - name: kafka_group
+        title: Ingestion info (Kafka)
+        dimensions:
+          - name: kafka.topic
+            title: Topic
+            formula: ${kafka.topic}
+
+          - name: writer_id
+            title: Writer Id
+            formula: $writer_id
+
+          - name: event_type
+            title: Event Type
+            formula: $event_type
+
+          - name: kafka.timestamp
+            title: Timestamp
+            formula: ${kafka.timestamp}
+#}
+    measures:
+      - name: packets
+        title: Packets
+        formula: $main.sum($packets)
+        format: 0,0.0 a
+
+      - name: bytes
+        title: Bytes
+        formula: $main.sum($bytes)
+        format: 0,0.0 a
+  {% endfor %}

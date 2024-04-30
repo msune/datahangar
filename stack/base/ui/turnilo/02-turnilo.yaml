@@ -16,19 +16,21 @@ spec:
         app: turnilo
     spec:
       containers:
-        - image: ghcr.io/datahangar/turnilo:1.40.2
-          command:
-            - "/nodejs/bin/node"
-            - "bin/turnilo"
-            - "run-config"
-            - "/tmp/config.yaml"
+        - image: ghcr.io/datahangar/turnilo:1.40.2-bookworm
+          command: ["/bin/bash", "-c", "python3 /tmp/conf/gen_turnilo_conf.py && /app/bin/turnilo run-config /turnilo_config.yaml"]
           imagePullPolicy: IfNotPresent
           name: turnilo
           ports:
             - containerPort: 9090
           volumeMounts:
-            - name: turnilo-volume
-              mountPath: /tmp/
+            - name: datahangar-config-volume
+              mountPath: /etc/datahangar
+              readOnly: true
+            - name: datahangar-dataprofiles-config-volume
+              mountPath: /etc/datahangar/data-profiles/
+              readOnly: true
+            - name: turnilo-config-volume
+              mountPath: /tmp/conf
               readOnly: true
           resources:
             limits:
@@ -38,6 +40,12 @@ spec:
               cpu: 500m
               memory: 256M
       volumes:
-        - name: turnilo-volume
+        - name: datahangar-config-volume
           configMap:
-            name: ui-turnilo-config-map
+            name: datahangar-config-map
+        - name: datahangar-dataprofiles-config-volume
+          configMap:
+            name: datahangar-dataprofiles-config-map
+        - name: turnilo-config-volume
+          configMap:
+            name: turnilo-config-map
