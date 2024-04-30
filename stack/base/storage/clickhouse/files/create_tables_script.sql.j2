@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS {{dbTableName}}(
+  {% for name, elem in clickhouse_cols.items() -%}
+    {{name}} {{elem["type"]}},
+  {% endfor %}
+  `packets` UInt64,
+  `bytes` UInt64
+)
+ENGINE = MergeTree
+ORDER BY (packets, bytes);
+
+CREATE TABLE IF NOT EXISTS {{dbTableName}}KafkaIngest (
+  {% for name, elem in clickhouse_cols.items() -%}
+    {{name}} {{elem["type"]}},
+  {% endfor %}
+  `packets` UInt64,
+  `bytes` UInt64
+)
+ENGINE = Kafka
+SETTINGS kafka_broker_list = 'kafka-headless-service:9093',
+   kafka_topic_list = '{{kafkaDbIngestionTopic}}',
+   kafka_group_name = 'group1',
+   kafka_format = 'JSON',
+   kafka_max_block_size = 1048576;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS {{dbTableName}}QueueMv TO {{dbTableName}} AS SELECT {%for name, elem in clickhouse_cols.items() -%}{{name}}, {%endfor-%} packets, bytes FROM {{dbTableName}}KafkaIngest;
+

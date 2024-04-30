@@ -21,16 +21,27 @@ spec:
                 name: clickhouse
                 key: admin-password
         command: ["/bin/bash"]
-        args: ["-c", "clickhouse-client -h clickhouse-headless-service  --queries-file /tmp/networkFlows_script.sql"]
+        args: ["-c", "apt-get update && apt-get install -y python3 python3-jinja2 && python3 /tmp/conf/generate_ingest_tables.py"]
         volumeMounts:
-          - name: clickhouse-ingestion-task
-            mountPath: /tmp/networkFlows_script.sql
+          - name: datahangar-config-volume
+            mountPath: /etc/datahangar
             readOnly: true
-            subPath: networkFlows_script.sql
+          - name: datahangar-dataprofiles-config-volume
+            mountPath: /etc/datahangar/data-profiles/
+            readOnly: true
+          - name: gen-ingestion-sql-config-volume
+            mountPath: /tmp/conf
+            readOnly: true
         imagePullPolicy: IfNotPresent
         name: clickhouse-load-ingestion-task
       restartPolicy: Never
       volumes:
-        - name: clickhouse-ingestion-task
+        - name: datahangar-config-volume
           configMap:
-            name: clickhouse-ingestion-task-config-map
+            name: datahangar-config-map
+        - name: datahangar-dataprofiles-config-volume
+          configMap:
+            name: datahangar-dataprofiles-config-map
+        - name: gen-ingestion-sql-config-volume
+          configMap:
+            name: gen-ingestion-sql-config-map
