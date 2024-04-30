@@ -1,0 +1,9 @@
+!Flowlogs
+nfacctd_ip: 0.0.0.0
+nfacctd_port: 2055
+
+!BGP
+bgp_daemon: true
+bgp_daemon_port: 179
+
+!Plugins

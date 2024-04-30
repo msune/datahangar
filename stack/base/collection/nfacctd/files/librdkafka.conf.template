@@ -1,0 +1,6 @@
+global,log_level,7
+global,builtin.features,sasl_plain
+global,security.protocol,SASL_PLAINTEXT
+global,sasl.mechanisms,SCRAM-SHA-512
+global,sasl.username,__KAFKA_USERNAME__
+global,sasl.password,__KAFKA_PASSWORD__

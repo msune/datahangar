@@ -23,7 +23,7 @@ spec:
             - /bin/bash
             - -c
           args:
-            - ". /tmp/patch_librdkafka_conf.sh && /usr/local/sbin/nfacctd -f /etc/pmacct/nfacctd.conf"
+            - ". /tmp/gen_nfacctd_conf.sh && /usr/local/sbin/nfacctd -f /etc/pmacct/nfacctd.conf"
           env:
             - name: KAFKA_USERNAME
               valueFrom:
@@ -43,13 +43,19 @@ spec:
               protocol: TCP
               containerPort: 179
           volumeMounts:
-            - name: nfacctd-config-volume
-              mountPath: /tmp/patch_librdkafka_conf.sh
-              subPath: patch_librdkafka_conf.sh
+            - name: datahangar-config-volume
+              mountPath: /etc/datahangar
+              readOnly: true
+            - name: datahangar-dataprofiles-config-volume
+              mountPath: /etc/datahangar/data-profiles/
               readOnly: true
             - name: nfacctd-config-volume
-              mountPath: /etc/pmacct/nfacctd.conf
-              subPath: nfacctd.conf
+              mountPath: /tmp/gen_nfacctd_conf.sh
+              subPath: gen_nfacctd_conf.sh
+              readOnly: true
+            - name: nfacctd-config-volume
+              mountPath: /etc/pmacct/nfacctd.conf.template
+              subPath: nfacctd.conf.template
               readOnly: true
             - name: nfacctd-config-volume
               mountPath: /etc/pmacct/librdkafka.conf.template
@@ -63,6 +69,12 @@ spec:
               cpu: 500m
               memory: 256M
       volumes:
+        - name: datahangar-config-volume
+          configMap:
+            name: datahangar-config-map
         - name: nfacctd-config-volume
           configMap:
             name: nfacctd-config-map
+        - name: datahangar-dataprofiles-config-volume
+          configMap:
+            name: datahangar-dataprofiles-config-map

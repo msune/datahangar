@@ -1,7 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+generatorOptions:
+  annotations:
+    generated: "true"
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: nfacctd-config-map
+    namespace: datahangar-stack
+    files:
+      - files/nfacctd.conf.template
+      - files/librdkafka.conf.template
+      - files/gen_nfacctd_conf.sh
+
 resources:
-  - 01-conf-nfacctd.yaml
   - 02-nfacctd.yaml
   - 03-service.yaml
