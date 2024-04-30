@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend-service
+  namespace: datahangar-stack
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: datahangar-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: ghcr.io/datahangar/frontend:0.0.1
+          imagePullPolicy: IfNotPresent
+          name: frontend
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: frontend-volume
+              mountPath: /etc/nginx/conf.d/
+              readOnly: true
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512G
+            requests:
+              cpu: 250m
+              memory: 128M
+      volumes:
+        - name: frontend-volume
+          configMap:
+            name: frontend-config-map

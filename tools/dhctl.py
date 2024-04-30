@@ -17,6 +17,7 @@ COMPONENTS=[
     "bus/kafka",
     "collection/nfacctd",
     "storage/db",
+    "ui/frontend",
     "ui/turnilo"
 ]
 

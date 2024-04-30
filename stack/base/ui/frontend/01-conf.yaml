@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config-map
+  namespace: datahangar-stack
+data:
+  default.conf: |
+    server {
+      listen        80;
+      server_name   datahangar.io;
+
+      location  /rest {
+        resolver 127.0.0.1 valid=5s;
+        proxy_pass         http://backend-service;
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+      }
+      location  /turnilo {
+        resolver 127.0.0.1 valid=5s;
+        proxy_pass         http://ui-turnilo-service:9090;
+        proxy_redirect     off;
+        proxy_set_header   Host $host;
+      }
+
+      location / {
+        autoindex on;
+        root /usr/share/nginx/html/datahangar/;
+      }
+    }
