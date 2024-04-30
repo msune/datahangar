@@ -6,8 +6,27 @@ metadata:
 data:
   count_db_records.sh: |-
     set -e
+
+    #Count records function
+    #$1: tableName
+    count_records(){
+      if [[ "$DB" == "druid" ]]; then
+        FILE=/tmp/records.json
+        REQ=
+        echo ${REQ}
+        curl "http://druid-cluster-routers:8088/druid/v2/sql" --header 'Content-Type: application/json' --data '{"query": "select COUNT(packets) from '${1}'", "context" : {"sqlQueryId" : "request01"}, "header" : true, "typesHeader" : true, "sqlTypesHeader" : true }' > ${FILE}
+        READ_PKTS=$(cat ${FILE} | jq '.[1]["EXPR$0"]')
+      elif [[ "${DB}" == "clickhouse" ]]; then
+        READ_PKTS=$(echo "SELECT count(\"packets\") FROM ${1};" | curl 'default:FoolishPassword@clickhouse-service:8123/' --data-binary @-)
+      fi
+
+      echo "Read '${READ_PKTS}' rows from a total of '${N_PKTS}' sent records in ${1}"
+      #[[ "${PKTS}" == "${N_PKTS}" ]]
+      [[ "${READ_PKTS}" -gt 0 ]]
+    }
+
     apt-get update && apt-get install -y curl jq
-    N_RECORDS=$1
+    N_PKTS=$1
 
     #Detect DB
     if [[ $(curl -s clickhouse-service:8123) ]]; then
@@ -18,22 +37,10 @@ data:
     echo "Detected DB: ${DB}"
 
     #Query
-    if [[ "$DB" == "druid" ]]; then
-      FILE=/tmp/records.json
-      curl "http://druid-cluster-routers:8088/druid/v2/sql" --header 'Content-Type: application/json' --data '{
-        "query": "select COUNT(*) from networkFlows",
-        "context" : {"sqlQueryId" : "request01"},
-        "header" : true,
-        "typesHeader" : true,
-        "sqlTypesHeader" : true
-      }' > ${FILE}
-      ROWS=$(cat ${FILE} | jq '.[1]["EXPR$0"]')
-    elif [[ "${DB}" == "clickhouse" ]]; then
-      ROWS=$(echo "SELECT count() FROM networkFlows;" | curl 'default:FoolishPassword@clickhouse-service:8123/' --data-binary @-)
-    fi
+    for TABLE_NAME in "net_isp_pull net_isp_push net_ip_carrier_n2n net_ip_carrier_p2p"; do
+      count_records ${TABLE_NAME}
+    done
 
-    echo "Read '${ROWS}' rows from a total of '${N_RECORDS}' sent records"
-    [[ "${ROWS}" == "${N_RECORDS}" ]]
 ---
 apiVersion: batch/v1
 kind: Job

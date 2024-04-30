@@ -7,12 +7,12 @@ data:
   check_sources.sh: |-
     set -e
     apt-get update && apt-get install -y curl jq
-    EXPECTED_DATACUBE=$1
+    EXPECTED_N_DATACUBES=$1
     FILE=/tmp/sources.json
     curl "http://ui-turnilo-service:9090/turnilo/sources" -o ${FILE}
-    DATACUBE=$(cat ${FILE} | jq '.["dataCubes"][0]["source"]' | tr -d \")
-    echo "Datacube '${DATACUBE}', expected '${EXPECTED_DATACUBE}'"
-    [[ "${DATACUBE}" == "${EXPECTED_DATACUBE}" ]]
+    N_DATACUBES=$(cat ${FILE} | jq '.["dataCubes"] | length')
+    echo "Number of datacubes '${N_DATACUBES}', expected '${EXPECTED_N_DATACUBES}'"
+    [[ "${N_DATACUBES}" == "${EXPECTED_N_DATACUBES}" ]]
 ---
 apiVersion: batch/v1
 kind: Job
@@ -32,7 +32,7 @@ spec:
       - image: debian:bookworm-slim
         imagePullPolicy: IfNotPresent
         name: turnilo-check-datacube
-        command: ["bash", "-c", "/tmp/check_sources.sh networkFlows"]
+        command: ["bash", "-c", "/tmp/check_sources.sh 4"]
         volumeMounts:
           - name: turnilo-check-datacube-task
             mountPath: /tmp/check_sources.sh
