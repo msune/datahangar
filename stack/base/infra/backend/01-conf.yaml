@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config-map
+  namespace: datahangar-stack
+data:
+  constants.py: |
+    import os
+    DRIVER="postgresql"
+    POSTGRES_HOST="postgres-headless-service"
+    POSTGRES_PORT=5432
+    POSTGRES_DB="stack"
+    POSTGRES_USERNAME=os.getenv("POSTGRES_USERNAME")
+    POSTGRES_PASSWORD=os.getenv("POSTGRES_PASSWORD")
+    URL_PATH="/rest"

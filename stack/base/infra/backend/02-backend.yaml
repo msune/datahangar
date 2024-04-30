@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend
+  name: backend-service
+  namespace: datahangar-stack
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: datahangar-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - image: ghcr.io/datahangar/backend:0.0.1
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: POSTGRES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgresql-ha-postgresql
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgresql-ha-postgresql
+                key: password
+          name: backend
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: backend-volume
+              mountPath: /constants.py
+              subPath: constants.py
+              readOnly: true
+      volumes:
+        - name: backend-volume
+          configMap:
+            name: backend-config-map

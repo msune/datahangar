@@ -13,6 +13,7 @@ COMPONENTS=[
     "conf/",
     "infra/zookeeper",
     "infra/postgresql",
+    "infra/backend",
     "bus/kafka",
     "collection/nfacctd",
     "storage/db",
