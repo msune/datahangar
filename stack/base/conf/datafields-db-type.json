@@ -1,0 +1,202 @@
+{
+	"timestamp_start": {
+		"title": "Time start",
+		"kafka_id": "timestamp_start",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"timestamp_end": {
+		"title": "Time end",
+		"kafka_id": "timestamp_end",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"in_iface": {
+		"title": "Ingress Interface",
+		"kafka_id": "iface_in",
+		"druid" : {
+			"type": "long"
+		},
+		"clickhouse" : {
+			"type": "UInt32"
+		}
+	},
+	"etype": {
+		"title": "Ethertype",
+		"kafka_id": "etype",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"src_host": {
+		"title": "Src IP",
+		"kafka_id": "ip_src",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"src_mask": {
+		"title": "Src Mask",
+		"kafka_id": "mask_src",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"src_net": {
+		"title": "Src Network",
+		"kafka_id": "net_src",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"src_host_country": {
+		"title": "Src IP Country",
+		"kafka_id": "country_ip_src",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"dst_host": {
+		"title": "Dst IP",
+		"kafka_id": "ip_dst",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"dst_mask": {
+		"title": "Dst Mask",
+		"kafka_id": "mask_dst",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"dst_net": {
+		"title": "Dst Network",
+		"kafka_id": "net_dst",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"dst_host_country": {
+		"title": "Dst IP Country",
+		"kafka_id": "country_ip_dst",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"src_as": {
+		"title": "BGP Src AS",
+		"kafka_id": "as_src",
+		"druid" : {
+			"type": "long"
+		},
+		"clickhouse" : {
+			"type": "UInt32"
+		}
+	},
+	"dst_as": {
+		"title": "BGP Dst AS",
+		"kafka_id": "as_dst",
+		"druid" : {
+			"type": "long"
+		},
+		"clickhouse" : {
+			"type": "UInt32"
+		}
+	},
+	"as_path": {
+		"title": "BGP AS path",
+		"kafka_id": "as_path",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"peer_src_ip": {
+		"title": "BGP Peer Src IP",
+		"kafka_id": "peer_ip_src",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"peer_src_as": {
+		"title": "BGP Peer Src AS",
+		"kafka_id": "peer_as_src",
+		"druid" : {
+			"type": "long"
+		},
+		"clickhouse" : {
+			"type": "UInt32"
+		}
+	},
+	"peer_dst_ip": {
+		"title": "BGP Peer Dst IP",
+		"kafka_id": "peer_ip_dst",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	},
+	"peer_dst_as": {
+		"title": "BGP Peer Dst AS",
+		"kafka_id": "peer_as_dst",
+		"druid" : {
+			"type": "long"
+		},
+		"clickhouse" : {
+			"type": "UInt32"
+		}
+	},
+	"mpls_vpn_rd": {
+		"title": "MPLS VPN Route Distinguisher",
+		"kafka_id": "mpls_vpn_rd",
+		"druid" : {
+			"type": "string"
+		},
+		"clickhouse" : {
+			"type": "String"
+		}
+	}
+}

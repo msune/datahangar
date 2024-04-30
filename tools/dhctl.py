@@ -10,6 +10,7 @@ E_MSG="ERROR:"
 W_MSG="WARNING:"
 
 COMPONENTS=[
+    "conf/",
     "infra/zookeeper",
     "infra/postgresql",
     "bus/kafka",

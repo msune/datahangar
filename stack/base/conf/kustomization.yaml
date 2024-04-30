@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  annotations:
+    generated: "true"
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: datahangar-config-map
+    namespace: datahangar-stack
+    files:
+      - datahangar.conf
+      - dh_conf_parser_lib.sh
+      - datafields-db-type.json
+      - dh_conf_parser_lib.py
+  - name: datahangar-dataprofiles-config-map
+    namespace: datahangar-stack
+    files:
+      - data-profiles/net.ip-carrier.n2n
+      - data-profiles/net.ip-carrier.p2p
+      - data-profiles/net.isp.pull
+      - data-profiles/net.isp.push
