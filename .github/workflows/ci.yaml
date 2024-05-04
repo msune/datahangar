@@ -7,7 +7,48 @@ on:
     - cron: '0 0 * * *'  # every day at midnight
 
 jobs:
-  basic:
+  cache-docker-images:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Cleanup disk to maximize runner disk space
+        uses: AdityaGarg8/remove-unwanted-software@v3 #easimon/maximize-build-space@v10
+        with:
+          remove-android: true
+          remove-dotnet: True
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+
+      - name: Checkout datahangar
+        uses: actions/checkout@v4
+        with:
+          path: datahangar
+
+      - name: Cache docker images into a tarball
+        run: |
+          cd datahangar
+          mkdir -p /tmp/docker
+          .github/workflows/files/collect_docker_images.sh . > /tmp/docker/images_list
+          IMAGES=$(cat /tmp/docker/images_list)
+          for IMAGE in ${IMAGES}; do
+            docker pull ${IMAGE}
+          done
+          docker save $(for IMAGE in ${IMAGES}; do echo "${IMAGE} "; done) -o /tmp/docker/docker_images_${GITHUB_RUN_ID}.tar
+
+      - name: Export Cache as an artifact
+        uses: actions/upload-artifact@v2.2.2
+        with:
+          name: docker_images
+          retention-days: 1
+          path: |
+            /tmp/docker
+
+      - name: Check available disk space...
+        run: |
+          df -h
+
+  basic-test:
+    needs: [cache-docker-images]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -17,6 +58,15 @@ jobs:
       KCTL: "minikube kubectl -- "
       N_RECORDS: 1024
     steps:
+      - name: Cleanup disk to maximize runner disk space
+        uses: AdityaGarg8/remove-unwanted-software@v3 #easimon/maximize-build-space@v10
+        with:
+          remove-android: true
+          remove-dotnet: True
+          remove-haskell: true
+          remove-codeql: true
+          remove-docker-images: true
+
       - name: Checkout datahangar
         uses: actions/checkout@v4
         with:
@@ -34,6 +84,17 @@ jobs:
           kubernetes-version: ${{matrix.k8s_version}}
           cpus: 'max'
           memory: 12G
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: docker_images
+          path: /tmp/docker
+
+      - name: Import docker cached images to minikube's registry
+        run: |
+          eval $(minikube docker-env)
+          docker load -i /tmp/docker/docker_images_${GITHUB_RUN_ID}.tar
+          docker image ls
 
       - name: "Deploy DataHangar stack (DB: ${{matrix.db}})"
         run: |
@@ -75,3 +136,7 @@ jobs:
           retry_wait_seconds: 15
           shell: bash
           command: /home/runner/work/datahangar/datahangar/datahangar/tools/dhctl.py status dev -p /home/runner/work/datahangar/datahangar/datahangar/
+
+      - name: Show available disk space...
+        run: |
+          df -h
