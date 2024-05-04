@@ -172,6 +172,14 @@ def _check_services(kctl: str):
             logging.warning(f"{W_MSG} Service '{service_name}' in namespace '{ns}' is NOT healthy.")
     return all_healthy
 
+def _get_job_last_log(kctl, job_name):
+    ns = DH_NAMESPACE
+    try:
+        pod_name = _kctl_exec(kctl, ["get", "pods", "-n", ns, "--selector=job-name="+job_name, "--output=jsonpath='{.items[-1].metadata.name}'"]).stdout.decode('utf-8').strip('"').strip("'")
+        return _kctl_exec(kctl, [ "-n", ns, "logs", pod_name]).stdout.decode('utf-8')
+    except Exception as e:
+        return "EXCEPTION recovering logs "+str(e)
+
 def _check_jobs_completion(kctl: str):
     ns = DH_NAMESPACE
     proc = _kctl_exec(kctl, ["get", "jobs", "-n", ns, "-o=json"], True)
@@ -185,6 +193,8 @@ def _check_jobs_completion(kctl: str):
         job_name = job['metadata']['name']
         if "succeeded" not in job_status.keys() or job_status['succeeded'] == 0:
             logging.warning(f"{W_MSG} Job '{job_name}' in namespace '{ns}' has not completed ({job_status}).")
+            jobs_last_log = _get_job_last_log(kctl, job_name)
+            logging.warning(f"Last log:\n---\n {jobs_last_log}\n---\n")
             all_healthy = False
 
     return all_healthy
