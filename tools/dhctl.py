@@ -50,7 +50,7 @@ def _kctl_exec(_kctl: str, cmd, debug_only: bool=True):
     try:
         proc = subprocess.run(kctl + cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except Exception as e:
-        raise typer.Exit("could not execute '" + str(kctl+cmd) +"'.\n" + proc.stdout +"\nException:\n"+str(e))
+        raise typer.Exit("could not execute '" + str(kctl+cmd) +"'.\nException:\n"+str(e))
     logging.debug("[>] "+str(kctl+cmd))
 
     if not debug_only:
