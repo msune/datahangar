@@ -20,3 +20,8 @@ configMapGenerator:
       - data-profiles/net.ip-carrier.p2p
       - data-profiles/net.isp.pull
       - data-profiles/net.isp.push
+secretGenerator:
+  - name: datahangar-users-secret
+    namespace: datahangar-stack
+    files:
+      - users/users.yaml
