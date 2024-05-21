@@ -6,8 +6,29 @@ metadata:
 data:
   default.conf: |
     server {
-      listen        80;
+            #HTTP to HTTPs
+            listen 80 default_server;
+            server_name _;
+            return 301 https://$host$request_uri;
+    }
+
+    server {
+      listen 443 ssl;
       server_name   datahangar.io;
+
+      add_header 'Access-Control-Allow-Origin' '*';
+
+      # SSL block
+      ssl_certificate /etc/nginx/certs/tls.crt;
+      ssl_certificate_key /etc/nginx/certs/tls.key;
+
+      # Other SSL configurations (optional)
+      ssl_protocols TLSv1.2 TLSv1.3;
+      ssl_prefer_server_ciphers on;
+      ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:...';
+
+      auth_basic "Restricted Content";
+      auth_basic_user_file /etc/nginx/htpasswd/htpasswd;
 
       location  /rest {
         resolver 127.0.0.1 valid=5s;

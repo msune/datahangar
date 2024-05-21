@@ -1,6 +1,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+generatorOptions:
+  annotations:
+    generated: "true"
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: frontend-scripts-config-map
+    namespace: datahangar-stack
+    files:
+      - files/gen_htpasswd.sh
+secretGenerator:
+  - name: frontend-certs-secret
+    namespace: datahangar-stack
+    files:
+      - files/tls.key
+      - files/tls.crt
+    type: "kubernetes.io/tls"
+
 resources:
   - 01-conf.yaml
   - 02-frontend.yaml

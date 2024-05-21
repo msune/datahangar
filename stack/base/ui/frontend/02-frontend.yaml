@@ -7,7 +7,10 @@ metadata:
   namespace: datahangar-stack
 spec:
   ports:
-    - port: 80
+    - name: http
+      port: 80
+    - name: https
+      port: 443
   selector:
     app: frontend
 ---
@@ -29,14 +32,29 @@ spec:
         app: frontend
     spec:
       containers:
-        - image: ghcr.io/datahangar/frontend:0.0.1
+        - image: ghcr.io/datahangar/frontend:0.0.3
           imagePullPolicy: IfNotPresent
           name: frontend
+          command: ["sh", "-c", ". /tmp/gen_htpasswd.sh && nginx -g \"daemon off;\""]
           ports:
-            - containerPort: 80
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
           volumeMounts:
             - name: frontend-volume
               mountPath: /etc/nginx/conf.d/
+              readOnly: true
+            - name: frontend-users-volume
+              mountPath: /tmp/users.yaml
+              subPath: users.yaml
+              readOnly: true
+            - name: frontend-scripts-volume
+              mountPath: /tmp/gen_htpasswd.sh
+              readOnly: false
+              subPath: gen_htpasswd.sh
+            - name: frontend-certs-volume
+              mountPath: /etc/nginx/certs/
               readOnly: true
           resources:
             limits:
@@ -46,6 +64,15 @@ spec:
               cpu: 250m
               memory: 128M
       volumes:
+        - name: frontend-scripts-volume
+          configMap:
+            name: frontend-scripts-config-map
+        - name: frontend-certs-volume
+          secret:
+            secretName: frontend-certs-secret
         - name: frontend-volume
           configMap:
             name: frontend-config-map
+        - name: frontend-users-volume
+          secret:
+            secretName: datahangar-users-secret
