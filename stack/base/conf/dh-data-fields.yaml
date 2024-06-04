@@ -1,0 +1,182 @@
+data:
+  fields:
+    - title: Time start
+      nfacctd:
+        name: timestamp_start
+      kafka:
+        name: timestamp_start
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Time end
+      nfacctd:
+        name: timestamp_end
+      kafka:
+        name: timestamp_end
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Ingress Interface
+      nfacctd:
+        name: in_iface
+      kafka:
+        name: iface_in
+      druid:
+        type: long
+      clickhouse:
+        type: UInt32
+    - title: Ethertype
+      nfacctd:
+        name: etype
+      kafka:
+        name: etype
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Src IP
+      nfacctd:
+        name: src_host
+      kafka:
+        name: ip_src
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Src Mask
+      nfacctd:
+        name: src_mask
+      kafka:
+        name: mask_src
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Src Network
+      nfacctd:
+        name: src_net
+      kafka:
+        name: net_src
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Src IP Country
+      nfacctd:
+        name: src_host_country
+      kafka:
+        name: country_ip_src
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Dst IP
+      nfacctd:
+        name: dst_host
+      kafka:
+        name: ip_dst
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Dst Mask
+      nfacctd:
+        name: dst_mask
+      kafka:
+        name: mask_dst
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Dst Network
+      nfacctd:
+        name: dst_net
+      kafka:
+        name: net_dst
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: Dst IP Country
+      nfacctd:
+        name: dst_host_country
+      kafka:
+        name: country_ip_dst
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: BGP Src AS
+      nfacctd:
+        name: src_as
+      kafka:
+        name: as_src
+      druid:
+        type: long
+      clickhouse:
+        type: UInt32
+    - title: BGP Dst AS
+      nfacctd:
+        name: dst_as
+      kafka:
+        name: as_dst
+      druid:
+        type: long
+      clickhouse:
+        type: UInt32
+    - title: BGP AS path
+      nfacctd:
+        name: as_path
+      kafka:
+        name: as_path
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: BGP Peer Src IP
+      nfacctd:
+        name: peer_src_ip
+      kafka:
+        name: peer_ip_src
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: BGP Peer Src AS
+      nfacctd:
+        name: peer_src_as
+      kafka:
+        name: peer_as_src
+      druid:
+        type: long
+      clickhouse:
+        type: UInt32
+    - title: BGP Peer Dst IP
+      nfacctd:
+        name: peer_dst_ip
+      kafka:
+        name: peer_ip_dst
+      druid:
+        type: string
+      clickhouse:
+        type: String
+    - title: BGP Peer Dst AS
+      nfacctd:
+        name: peer_dst_as
+      kafka:
+        name: peer_as_dst
+      druid:
+        type: long
+      clickhouse:
+        type: UInt32
+    - title: MPLS VPN Route Distinguisher
+      nfacctd:
+        name: mpls_vpn_rd
+      kafka:
+        name: mpls_vpn_rd
+      druid:
+        type: string
+      clickhouse:
+        type: String

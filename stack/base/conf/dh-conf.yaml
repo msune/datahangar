@@ -1,0 +1,39 @@
+#TODO add general configuration params
+
+pipelines:
+  - name: "net.isp.pull"
+    title: "Network ISP pull"
+    description: "A pipeline primarily targeting the ISP pull use-case"
+    data-profiles: ["net.isp.pull", "net.raw.mpls_vpn_rd"]
+    kafka:
+      topic-nfacctd-out: "net.isp.pull"
+      topic-db-ingestion: "net.isp.pull"
+    db:
+      table-name: "net_isp_pull"
+  - name: "net.isp.push"
+    title: "Network ISP push"
+    description: "A pipeline primarily targeting the ISP push use-case"
+    data-profiles: ["net.isp.push", "net.raw.mpls_vpn_rd"]
+    kafka:
+      topic-nfacctd-out: "net.isp.push"
+      topic-db-ingestion: "net.isp.push"
+    db:
+      table-name: "net_isp_push"
+  - name: "net.ip-carrier.n2n"
+    title: "Network IP Carrier Node to node"
+    description: "A pipeline primarily targeting the IP carrier use case (node to node)"
+    data-profiles: ["net.ip-carrier.n2n"]
+    kafka:
+      topic-nfacctd-out: "net.ip-carrier.n2n"
+      topic-db-ingestion: "net.ip-carrier.n2n"
+    db:
+      table-name: "net_ip_carrier_n2n"
+  - name: "net.ip-carrier.p2p"
+    title: "Network IP Carrier Port to Port"
+    description: "A pipeline primarily targeting the IP carrier use case (port to port)"
+    data-profiles: ["net.ip-carrier.p2p"]
+    kafka:
+      topic-nfacctd-out: "net.ip-carrier.p2p"
+      topic-db-ingestion: "net.ip-carrier.p2p"
+    db:
+      table-name: "net_ip_carrier_p2p"
