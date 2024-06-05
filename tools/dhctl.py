@@ -29,7 +29,7 @@ DEFAULT_KCTL=(os.getenv("KCTL") or "kubectl")
 
 #Reusable arg/opt objects
 OVERLAY_ARG = typer.Argument(..., help="Overlay name")
-COMPONENTS_OPT = typer.Option(None, "--components", "-c", help="Components [default: all]")
+COMPONENTS_OPT = typer.Option(None, "--components", "-c", help="Components, comma separated [default: all]")
 PATH_OPT = typer.Option("./", "--path", "-p", help="DataHangar root folder")
 KCTL_OPT = typer.Option(DEFAULT_KCTL, "--kubectl", "-k", help="kubectl command")
 
@@ -104,6 +104,8 @@ def _invoke_kustomize_components(path: str, overlay: str, op: str, components : 
     if components == None:
         # Find all components
         components = COMPONENTS
+    else:
+        components = components.strip().split(",")
 
     op_str = "Deploy" if op == "apply" else "Undeploy"
     for c_it in components:
@@ -245,7 +247,8 @@ def undeploy(overlay: str = OVERLAY_ARG, path: str = PATH_OPT, components: str =
     _check_dh_root_folder(path)
     _invoke_kustomize_components(path, overlay, "delete", components, kctl)
     try:
-        _ns(kctl, "delete")
+        if not components:
+            _ns(kctl, "delete")
     except Exception as e:
         logging.warning(W_MSG+str(e))
 
