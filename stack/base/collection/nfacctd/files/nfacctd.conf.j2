@@ -7,3 +7,25 @@ bgp_daemon: true
 bgp_daemon_port: 179
 
 !Plugins
+!Kafka Plugin instances
+plugins:
+{%- for name, pipeline in conf["pipelines"].items() -%}
+kafka[{{ name }}],
+{%- endfor %}
+
+{% for name, pipeline in conf["pipelines"].items() -%}
+{% if pipeline["disabled"] -%}
+![Autogen] DataHangar pipeline '{{ name }}' DISABLED"
+{% else -%}
+![Autogen] DataHangar pipeline '{{ name }}'
+![Autogen] Id: {{ name }}
+![Autogen] Description: {{ pipeline["description"] }}
+kafka_topic[{{ name }}]: {{ pipeline["kafka"]["topic-nfacctd-out"] }}
+kafka_config_file[{{ name }}]: /etc/pmacct/librdkafka.conf
+kafka_broker_host[{{ name }}]: kafka-headless-service
+kafka_broker_port[{{ name }}]: 9092
+kafka_refresh_time[{{ name }}]: 1
+aggregate[{{ name }}]: {%- for field in pipeline["data-profiles-aggr-fields"] -%}{{field}}, {%- endfor -%}
+{% endif %}
+
+{% endfor %}

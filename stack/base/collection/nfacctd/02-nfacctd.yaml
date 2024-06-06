@@ -15,15 +15,10 @@ spec:
       labels:
         app: nfacctd
     spec:
-      containers:
-        - name: nfacctd-worker
-          image: pmacct/nfacctd:latest
+      initContainers:
+        - name: nfacctd-conf-generator
+          image: ghcr.io/datahangar/init-conf-gen:0.0.1
           imagePullPolicy: IfNotPresent
-          command:
-            - /bin/bash
-            - -c
-          args:
-            - ". /tmp/gen_nfacctd_conf.sh && /usr/local/sbin/nfacctd -f /etc/pmacct/nfacctd.conf"
           env:
             - name: KAFKA_USERNAME
               valueFrom:
@@ -35,6 +30,20 @@ spec:
                 secretKeyRef:
                   name: kafka
                   key: password
+          command: ["sh", "-c", "python3 /tmp/pmacct/gen_nfacctd_conf.py"]
+          volumeMounts:
+            - name: datahangar-config-volume
+              mountPath: /etc/datahangar
+              readOnly: true
+            - name: nfacctd-config-volume
+              mountPath: /etc/pmacct/
+            - name: nfacctd-config-gen-volume
+              mountPath: /tmp/pmacct/
+              readOnly: true
+      containers:
+        - name: nfacctd-worker
+          image: pmacct/nfacctd:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - name: flowlogs
               protocol: UDP
@@ -46,20 +55,8 @@ spec:
             - name: datahangar-config-volume
               mountPath: /etc/datahangar
               readOnly: true
-            - name: datahangar-dataprofiles-config-volume
-              mountPath: /etc/datahangar/data-profiles/
-              readOnly: true
             - name: nfacctd-config-volume
-              mountPath: /tmp/gen_nfacctd_conf.sh
-              subPath: gen_nfacctd_conf.sh
-              readOnly: true
-            - name: nfacctd-config-volume
-              mountPath: /etc/pmacct/nfacctd.conf.template
-              subPath: nfacctd.conf.template
-              readOnly: true
-            - name: nfacctd-config-volume
-              mountPath: /etc/pmacct/librdkafka.conf.template
-              subPath: librdkafka.conf.template
+              mountPath: /etc/pmacct/
               readOnly: true
           resources:
             limits:
@@ -72,9 +69,8 @@ spec:
         - name: datahangar-config-volume
           configMap:
             name: datahangar-config-map
+        - name: nfacctd-config-gen-volume
+          configMap:
+            name: nfacctd-config-gen-map
         - name: nfacctd-config-volume
-          configMap:
-            name: nfacctd-config-map
-        - name: datahangar-dataprofiles-config-volume
-          configMap:
-            name: datahangar-dataprofiles-config-map
+          emptyDir: {}

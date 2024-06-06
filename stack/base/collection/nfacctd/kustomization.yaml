@@ -6,12 +6,12 @@ generatorOptions:
     generated: "true"
   disableNameSuffixHash: true
 configMapGenerator:
-  - name: nfacctd-config-map
+  - name: nfacctd-config-gen-map
     namespace: datahangar-stack
     files:
-      - files/nfacctd.conf.template
-      - files/librdkafka.conf.template
-      - files/gen_nfacctd_conf.sh
+      - files/nfacctd.conf.j2
+      - files/librdkafka.conf.j2
+      - files/gen_nfacctd_conf.py
 
 resources:
   - 02-nfacctd.yaml
