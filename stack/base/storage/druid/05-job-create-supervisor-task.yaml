@@ -13,7 +13,8 @@ spec:
       name: druid-load-supervisor-tasks
     spec:
       containers:
-      - image: python:3.9.19-bookworm
+      - image: ghcr.io/datahangar/init-conf-gen:0.0.1
+        imagePullPolicy: IfNotPresent
         env:
           - name: KAFKA_USERNAME
             valueFrom:
@@ -25,27 +26,20 @@ spec:
               secretKeyRef:
                 name: kafka
                 key: password
-        command: ["bash", "-c", "pip3 install jinja2 requests && cd tmp/ && python3 -u submit_kafka_ingest_tasks.py"]
+        command: ["bash", "-c", "python3 -u /tmp/submit_kafka_ingest_tasks.py"]
         volumeMounts:
           - name: datahangar-config-volume
             mountPath: /etc/datahangar
             readOnly: true
-          - name: datahangar-dataprofiles-config-volume
-            mountPath: /etc/datahangar/data-profiles/
-            readOnly: true
           - name: druid-supervisor-ingestor-tasks
             mountPath: /tmp/
             readOnly: true
-        imagePullPolicy: IfNotPresent
         name: druid-load-supervisor-tasks
       restartPolicy: Never
       volumes:
         - name: datahangar-config-volume
           configMap:
             name: datahangar-config-map
-        - name: datahangar-dataprofiles-config-volume
-          configMap:
-            name: datahangar-dataprofiles-config-map
         - name: druid-supervisor-ingestor-tasks
           configMap:
             name: druid-supervisor-tasks-config-map

@@ -4,22 +4,28 @@ import re
 from jinja2 import Environment, FileSystemLoader
 import os, sys
 import requests
-
-sys.path.append("/etc/datahangar/")
-from dh_conf_parser_lib import *
+import pprint
 
 DH_CONF_FOLDER="/etc/datahangar/"
 DRY_RUN=False
 
-def submit_ingestion_task(name, pipeline, cols, template):
+sys.path.append(DH_CONF_FOLDER)
+sys.path.append(DH_CONF_FOLDER+"/lib/")
+from dh_conf import datahangar_load_conf, datahangar_pipeline_db_get_cols
+
+def submit_ingestion_task(conf: dict, name:str, pipeline: dict) -> None:
     #Generate and add KAFKA secrets
     data = {
-        'kafkaDbIngestionTopic': pipeline["kafka.dbIngestionTopic"],
-        'dbTableName': pipeline["dbTableName"],
-        'druid_cols': cols
+        'kafkaDbIngestionTopic': pipeline["kafka"]["topic-db-ingestion"],
+        'dbTableName': pipeline["db"]["table-name"],
+        'druid_cols': datahangar_pipeline_db_get_cols(conf, pipeline, "druid")
     }
+
+    template = Environment(loader=FileSystemLoader('/tmp/')).get_template('kafka_ingest_spec.json.j2')
     spec = template.render(data)
     print(f"Spec (JSON pre-credentials):\n{spec}")
+
+    #Doing this just to not print the credentials in the log...
     spec = spec.replace("__KAFKA_USERNAME__", os.environ.get('KAFKA_USERNAME'))
     spec = spec.replace("__KAFKA_PASSWORD__", os.environ.get('KAFKA_PASSWORD'))
 
@@ -33,16 +39,13 @@ def submit_ingestion_task(name, pipeline, cols, template):
             raise Exception(f"ERROR({response.status_code}): submitting ingestion task: {response.text}")
 
 if __name__ == "__main__":
-    pipelines=get_pipelines()
+    conf = datahangar_load_conf(DH_CONF_FOLDER)
 
-    template = Environment(loader=FileSystemLoader('.')).get_template('kafka_ingest_spec.json.j2')
-    for name, pipeline in pipelines.items():
+    for name, pipeline in conf["pipelines"].items():
         #Ignore disabled pipelines
-        if not pipeline["enabled"]:
-            print(f"WARNING: pipeline '{pipeline}' is disabled")
+        if "disabled" in pipeline and pipeline["disabled"]:
+            print(f"WARNING: pipeline '{name}' is disabled")
             continue
 
-        cols = get_db_cols("druid", pipeline)
-
         print(f"Generating and submitting '{name}' ingestion task...")
-        submit_ingestion_task(name, pipeline, cols, template)
+        submit_ingestion_task(conf, name, pipeline)
