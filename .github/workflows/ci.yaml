@@ -51,6 +51,7 @@ jobs:
     needs: [cache-docker-images]
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         k8s_version: [v1.27.13, v1.28.9, v1.29.4]
         db: [druid, clickhouse]
