@@ -32,7 +32,8 @@ clusters:
 dataCubes:
   {% for name, c in data_cubes.items() -%}
   - name: {{name}}
-    title: {{c["description"]}}
+    title: {{c["title"]}}
+    description: {{c["description"]}}
     clusterName: druid
     source: {{c["db_table_name"]}}
 

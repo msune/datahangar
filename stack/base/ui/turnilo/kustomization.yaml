@@ -6,7 +6,7 @@ generatorOptions:
     generated: "true"
   disableNameSuffixHash: true
 configMapGenerator:
-  - name: turnilo-config-map
+  - name: turnilo-config-gen-map
     namespace: datahangar-stack
     files:
       - files/gen_turnilo_conf.py

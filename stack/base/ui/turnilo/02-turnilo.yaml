@@ -15,22 +15,30 @@ spec:
       labels:
         app: turnilo
     spec:
+      initContainers:
+        - name: turnilo-conf-generator
+          image: ghcr.io/datahangar/init-conf-gen:0.0.1
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "python3 /tmp/gen_turnilo_conf.py"]
+          volumeMounts:
+            - name: datahangar-config-volume
+              mountPath: /etc/datahangar
+              readOnly: true
+            - name: turnilo-config-volume
+              mountPath: /etc/turnilo/
+            - name: turnilo-config-gen-volume
+              mountPath: /tmp/
+              readOnly: true
       containers:
         - image: ghcr.io/datahangar/turnilo:1.40.2-bookworm
-          command: ["/bin/bash", "-c", "python3 /tmp/conf/gen_turnilo_conf.py && /app/bin/turnilo run-config /turnilo_config.yaml"]
+          command: ["/bin/bash", "-c", "/app/bin/turnilo run-config /etc/turnilo/config.yaml"]
           imagePullPolicy: IfNotPresent
           name: turnilo
           ports:
             - containerPort: 9090
           volumeMounts:
-            - name: datahangar-config-volume
-              mountPath: /etc/datahangar
-              readOnly: true
-            - name: datahangar-dataprofiles-config-volume
-              mountPath: /etc/datahangar/data-profiles/
-              readOnly: true
             - name: turnilo-config-volume
-              mountPath: /tmp/conf
+              mountPath: /etc/turnilo/
               readOnly: true
           resources:
             limits:
@@ -43,9 +51,8 @@ spec:
         - name: datahangar-config-volume
           configMap:
             name: datahangar-config-map
-        - name: datahangar-dataprofiles-config-volume
+        - name: turnilo-config-gen-volume
           configMap:
-            name: datahangar-dataprofiles-config-map
+            name: turnilo-config-gen-map
         - name: turnilo-config-volume
-          configMap:
-            name: turnilo-config-map
+          emptyDir: {}
