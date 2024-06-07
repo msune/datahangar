@@ -133,7 +133,7 @@ def datahangar_pipeline_db_get_cols(conf: dict, pipeline: dict, db: str) -> dict
     return cols
 
 def datahangar_load_conf(path: str):
-    conf_files = ["dh-data-fields.yaml", "dh-data-profiles.yaml", "dh-conf.yaml"]
+    conf_files = ["data-fields.yaml", "data-profiles.yaml", "conf.yaml"]
 
     conf = {}
     for conf_file in conf_files:

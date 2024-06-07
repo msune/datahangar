@@ -9,13 +9,13 @@ configMapGenerator:
   - name: datahangar-config-map
     namespace: datahangar-stack
     files:
-      - dh-conf.yaml
-      - dh-data-fields.yaml
-      - dh-data-profiles.yaml
+      - conf.yaml
+      - data-fields.yaml
+      - data-profiles.yaml
       - lib/dh_conf.py
 
 secretGenerator:
   - name: datahangar-users-secret
     namespace: datahangar-stack
     files:
-      - dh-users.yaml
+      - users.yaml

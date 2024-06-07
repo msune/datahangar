@@ -2,7 +2,7 @@ import yaml
 from passlib.apache import HtpasswdFile
 import os
 
-with open('/tmp/dh-users.yaml', 'r') as file:
+with open('/tmp/users.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
 htpasswd = HtpasswdFile()

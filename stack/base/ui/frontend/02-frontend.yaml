@@ -44,8 +44,8 @@ spec:
               mountPath: /tmp/gen/
               readOnly: true
             - name: frontend-users-volume
-              mountPath: /tmp/dh-users.yaml
-              subPath: dh-users.yaml
+              mountPath: /tmp/users.yaml
+              subPath: users.yaml
               readOnly: true
             - name: frontend-htpasswd-volume
               mountPath: /etc/nginx/htpasswd/
