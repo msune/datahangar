@@ -6,10 +6,10 @@ generatorOptions:
     generated: "true"
   disableNameSuffixHash: true
 configMapGenerator:
-  - name: frontend-scripts-config-map
+  - name: frontend-config-gen-config-map
     namespace: datahangar-stack
     files:
-      - files/gen_htpasswd.sh
+      - files/gen_htpasswd.py
 secretGenerator:
   - name: frontend-certs-secret
     namespace: datahangar-stack

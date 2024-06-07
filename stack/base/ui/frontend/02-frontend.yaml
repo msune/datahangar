@@ -31,11 +31,28 @@ spec:
       labels:
         app: frontend
     spec:
+      initContainers:
+        - name: frontend-conf-generator
+          image: ghcr.io/datahangar/init-conf-gen:0.0.2
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "python3 /tmp/gen/gen_htpasswd.py"]
+          volumeMounts:
+            - name: datahangar-config-volume
+              mountPath: /etc/datahangar
+              readOnly: true
+            - name: frontend-config-gen-volume
+              mountPath: /tmp/gen/
+              readOnly: true
+            - name: frontend-users-volume
+              mountPath: /tmp/dh-users.yaml
+              subPath: dh-users.yaml
+              readOnly: true
+            - name: frontend-htpasswd-volume
+              mountPath: /etc/nginx/htpasswd/
       containers:
         - image: ghcr.io/datahangar/frontend:0.0.3
           imagePullPolicy: IfNotPresent
           name: frontend
-          command: ["sh", "-c", ". /tmp/gen_htpasswd.sh && nginx -g \"daemon off;\""]
           ports:
             - name: http
               containerPort: 80
@@ -45,16 +62,11 @@ spec:
             - name: frontend-volume
               mountPath: /etc/nginx/conf.d/
               readOnly: true
-            - name: frontend-users-volume
-              mountPath: /tmp/users.yaml
-              subPath: users.yaml
-              readOnly: true
-            - name: frontend-scripts-volume
-              mountPath: /tmp/gen_htpasswd.sh
-              readOnly: false
-              subPath: gen_htpasswd.sh
             - name: frontend-certs-volume
               mountPath: /etc/nginx/certs/
+              readOnly: true
+            - name: frontend-htpasswd-volume
+              mountPath: /etc/nginx/htpasswd/
               readOnly: true
           resources:
             limits:
@@ -64,15 +76,20 @@ spec:
               cpu: 250m
               memory: 128M
       volumes:
-        - name: frontend-scripts-volume
+        - name: datahangar-config-volume
           configMap:
-            name: frontend-scripts-config-map
+            name: datahangar-config-map
+        - name: frontend-users-volume
+          secret:
+            secretName: datahangar-users-secret
+        - name: frontend-config-gen-volume
+          configMap:
+            name: frontend-config-gen-config-map
         - name: frontend-certs-volume
           secret:
             secretName: frontend-certs-secret
         - name: frontend-volume
           configMap:
             name: frontend-config-map
-        - name: frontend-users-volume
-          secret:
-            secretName: datahangar-users-secret
+        - name: frontend-htpasswd-volume
+          emptyDir: {}

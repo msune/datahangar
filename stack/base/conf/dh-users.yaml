@@ -1,0 +1,9 @@
+users:
+  - name: "admin"
+    full-name: "Administrator user"
+    roles: "root"
+    password: "FoolishPassword"
+  - name: "auser"
+    full-name: "Regular user"
+    roles: "user"
+    password: "FoolishPassword"

@@ -18,4 +18,4 @@ secretGenerator:
   - name: datahangar-users-secret
     namespace: datahangar-stack
     files:
-      - users/users.yaml
+      - dh-users.yaml
