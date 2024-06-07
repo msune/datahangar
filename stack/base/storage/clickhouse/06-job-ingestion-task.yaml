@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - image: clickhouse/clickhouse-server
+        imagePullPolicy: IfNotPresent
         env:
           - name: CLICKHOUSE_PASSWORD
             valueFrom:
@@ -21,27 +22,20 @@ spec:
                 name: clickhouse
                 key: admin-password
         command: ["/bin/bash"]
-        args: ["-c", "apt-get update && apt-get install -y python3 python3-jinja2 && python3 /tmp/conf/generate_ingest_tables.py"]
+        args: ["-c", "apt-get update && apt-get install -y python3 python3-jinja2 python3-pip && pip3 install pyyaml && python3 /tmp/gen/generate_ingest_tables.py"]
         volumeMounts:
           - name: datahangar-config-volume
             mountPath: /etc/datahangar
             readOnly: true
-          - name: datahangar-dataprofiles-config-volume
-            mountPath: /etc/datahangar/data-profiles/
+          - name: clickhouse-ingestion-sql-gen-volume
+            mountPath: /tmp/gen
             readOnly: true
-          - name: gen-ingestion-sql-config-volume
-            mountPath: /tmp/conf
-            readOnly: true
-        imagePullPolicy: IfNotPresent
         name: clickhouse-load-ingestion-task
       restartPolicy: Never
       volumes:
         - name: datahangar-config-volume
           configMap:
             name: datahangar-config-map
-        - name: datahangar-dataprofiles-config-volume
+        - name: clickhouse-ingestion-sql-gen-volume
           configMap:
-            name: datahangar-dataprofiles-config-map
-        - name: gen-ingestion-sql-config-volume
-          configMap:
-            name: gen-ingestion-sql-config-map
+            name: clickhouse-ingestion-sql-gen-config-map

@@ -6,7 +6,7 @@ generatorOptions:
     generated: "true"
   disableNameSuffixHash: true
 configMapGenerator:
-  - name: gen-ingestion-sql-config-map
+  - name: clickhouse-ingestion-sql-gen-config-map
     namespace: datahangar-stack
     files:
       - files/create_tables_script.sql.j2
