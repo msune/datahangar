@@ -1,0 +1,16 @@
+[
+  {
+    "dataCube": "net.ip-carrier.p2p",
+    "shortName": "net.ip-carrier.p2p.push",
+    "name": "Port to Port (Push)",
+    "preset" : true,
+    "hash": "#this_is_a_hash#"
+  },
+  {
+    "dataCube": "net.ip-carrier.p2p",
+    "shortName": "net.ip-carrier.p2p.pull",
+    "name": "Port to Port (Pull)",
+    "preset" : true,
+    "hash": "#this_is_a_hash#"
+  }
+]

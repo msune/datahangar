@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-ui-dashboards-backend-task
+  labels:
+    app: load-ui-dashboards-backend-task
+  namespace: datahangar-stack
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: load-ui-dashboards-backend-task
+    spec:
+      containers:
+      - image: ghcr.io/datahangar/init-conf-gen:0.0.2
+        name: load-dashboards-tasks
+        command: ["/bin/bash", "-c", "python3 /tmp/dashboards/load_dashboards.py"]
+        volumeMounts:
+          - name: datahangar-config-volume
+            mountPath: /etc/datahangar
+            readOnly: true
+          - name: turnilo-dashboards-volume
+            mountPath: /tmp/dashboards/
+            readOnly: true
+      restartPolicy: Never
+      volumes:
+        - name: datahangar-config-volume
+          configMap:
+            name: datahangar-config-map
+        - name: turnilo-dashboards-volume
+          configMap:
+            name: turnilo-dashboards-config-map

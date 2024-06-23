@@ -11,6 +11,12 @@ configMapGenerator:
     files:
       - files/gen_turnilo_conf.py
       - files/turnilo_conf.yaml.j2
+  - name: turnilo-dashboards-config-map
+    namespace: datahangar-stack
+    files:
+      - files/dashboards/load_dashboards.py
+      - files/dashboards/net.ip-carrier.p2p.json
 resources:
   - 02-turnilo.yaml
   - 03-service.yaml
+  - 05-load-dashboards-task.yaml
