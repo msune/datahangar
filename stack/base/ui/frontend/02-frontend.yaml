@@ -50,7 +50,7 @@ spec:
             - name: frontend-htpasswd-volume
               mountPath: /etc/nginx/htpasswd/
       containers:
-        - image: ghcr.io/datahangar/frontend:0.0.3
+        - image: ghcr.io/datahangar/frontend:0.0.4
           imagePullPolicy: IfNotPresent
           name: frontend
           ports:
