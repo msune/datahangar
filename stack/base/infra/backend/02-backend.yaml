@@ -29,7 +29,7 @@ spec:
         app: backend
     spec:
       containers:
-        - image: ghcr.io/datahangar/backend:0.0.1
+        - image: ghcr.io/datahangar/backend:0.0.3
           imagePullPolicy: IfNotPresent
           env:
           - name: POSTGRES_USERNAME
