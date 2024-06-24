@@ -4,6 +4,30 @@ metadata:
   name: frontend-config-map
   namespace: datahangar-stack
 data:
+  locations.conf.frag: |
+    location  /rest {
+      proxy_pass         http://backend-service;
+      proxy_redirect     off;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location  /turnilo {
+      proxy_pass         http://ui-turnilo-service:9090;
+      proxy_redirect     off;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+      autoindex on;
+      root /usr/share/nginx/html/datahangar/;
+    }
+
   default.conf: |
     server {
             #HTTP to HTTPs
@@ -30,21 +54,17 @@ data:
       auth_basic "Restricted Content";
       auth_basic_user_file /etc/nginx/htpasswd/htpasswd;
 
-      location  /rest {
-        resolver 127.0.0.1 valid=5s;
-        proxy_pass         http://backend-service;
-        proxy_redirect     off;
-        proxy_set_header   Host $host;
-      }
-      location  /turnilo {
-        resolver 127.0.0.1 valid=5s;
-        proxy_pass         http://ui-turnilo-service:9090;
-        proxy_redirect     off;
-        proxy_set_header   Host $host;
-      }
+      include /etc/nginx/conf.d/locations.conf.frag;
+    }
 
-      location / {
-        autoindex on;
-        root /usr/share/nginx/html/datahangar/;
-      }
+    server {
+      listen 8090;
+      server_name healthchecks;
+
+      # Allow access only from localhost
+      allow 127.0.0.1;
+      allow ::1;
+      deny all;
+
+      include /etc/nginx/conf.d/locations.conf.frag;
     }

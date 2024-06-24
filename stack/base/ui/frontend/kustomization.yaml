@@ -10,6 +10,11 @@ configMapGenerator:
     namespace: datahangar-stack
     files:
       - files/gen_htpasswd.py
+  - name: frontend-healthcheck-config-map
+    namespace: datahangar-stack
+    files:
+      - files/checkhealth.sh
+
 secretGenerator:
   - name: frontend-certs-secret
     namespace: datahangar-stack

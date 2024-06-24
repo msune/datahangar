@@ -50,7 +50,7 @@ spec:
             - name: frontend-htpasswd-volume
               mountPath: /etc/nginx/htpasswd/
       containers:
-        - image: ghcr.io/datahangar/frontend:0.0.4
+        - image: ghcr.io/datahangar/frontend:0.0.5
           imagePullPolicy: IfNotPresent
           name: frontend
           ports:
@@ -68,6 +68,9 @@ spec:
             - name: frontend-htpasswd-volume
               mountPath: /etc/nginx/htpasswd/
               readOnly: true
+            - name: frontend-healthcheck-volume
+              mountPath: /tmp/healthcheck/
+              readOnly: true
           resources:
             limits:
               cpu: 1000m
@@ -75,6 +78,16 @@ spec:
             requests:
               cpu: 250m
               memory: 128M
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - ". /tmp/healthcheck/checkhealth.sh"
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 10
       volumes:
         - name: datahangar-config-volume
           configMap:
@@ -91,5 +104,8 @@ spec:
         - name: frontend-volume
           configMap:
             name: frontend-config-map
+        - name: frontend-healthcheck-volume
+          configMap:
+            name: frontend-healthcheck-config-map
         - name: frontend-htpasswd-volume
           emptyDir: {}
