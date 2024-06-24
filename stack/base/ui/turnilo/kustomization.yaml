@@ -16,6 +16,9 @@ configMapGenerator:
     files:
       - files/dashboards/load_dashboards.py
       - files/dashboards/net.ip-carrier.p2p.json
+      - files/dashboards/net.ip-carrier.n2n.json
+      - files/dashboards/net.isp.pull.json
+      - files/dashboards/net.isp.push.json
 resources:
   - 02-turnilo.yaml
   - 03-service.yaml
