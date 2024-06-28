@@ -7,6 +7,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout datahangar
+      uses: actions/checkout@v4
+      with:
+        path: datahangar
+
     - name: Random Number Generator
-      run: "Hello world ${{ inputs.ref }}"
+      run: "echo Hello world ${{ inputs.ref }}"
       shell: bash
