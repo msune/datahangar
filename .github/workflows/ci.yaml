@@ -16,9 +16,10 @@ jobs:
           path: datahangar
 
       - name: test
-        uses: ./datahangar/.github/workflows/test.yaml
+        uses: ./datahangar/.github/actions/test
         with:
-          ref: ${{ github.sha }}
+          who-to-greet: 'Mona the Octocat'
+          #ref: ${{ github.sha }}
 
   basic-test:
     needs: [cache-docker-images]
