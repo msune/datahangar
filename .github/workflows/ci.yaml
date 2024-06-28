@@ -18,8 +18,7 @@ jobs:
       - name: test
         uses: ./datahangar/.github/actions/test
         with:
-          who-to-greet: 'Mona the Octocat'
-          #ref: ${{ github.sha }}
+          ref: ${{ github.sha }}
 
   basic-test:
     needs: [cache-docker-images]
