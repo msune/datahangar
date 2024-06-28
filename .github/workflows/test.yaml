@@ -1,0 +1,22 @@
+name: test
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'Ref to checkout'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ inputs.branch }}
+
+    - name: Test
+      run: echo "HELLO"

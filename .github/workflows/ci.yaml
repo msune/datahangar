@@ -10,43 +10,15 @@ jobs:
   cache-docker-images:
     runs-on: ubuntu-22.04
     steps:
-      - name: Cleanup disk to maximize runner disk space
-        uses: AdityaGarg8/remove-unwanted-software@v3 #easimon/maximize-build-space@v10
-        with:
-          remove-android: true
-          remove-dotnet: True
-          remove-haskell: true
-          remove-codeql: true
-          remove-docker-images: true
-
       - name: Checkout datahangar
         uses: actions/checkout@v4
         with:
           path: datahangar
 
-      - name: Cache Docker images
-        id: docker-cache
-        uses: actions/cache@v3
+      - name: test
+        uses: ./datahangar/.github/workflows/test.yaml
         with:
-          path: /tmp/.docker
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Cache docker images into a tarball
-        run: |
-          cd datahangar
-          mkdir -p /tmp/.docker
-          .github/workflows/files/collect_docker_images.sh . > /tmp/.docker/images_list
-          IMAGES=$(cat /tmp/.docker/images_list)
-          for IMAGE in ${IMAGES}; do
-            docker pull ${IMAGE}
-          done
-          docker save $(for IMAGE in ${IMAGES}; do echo "${IMAGE} "; done) -o /tmp/.docker/docker_images.tar
-
-      - name: Check available disk space...
-        run: |
-          df -h
+          ref: ${{ github.sha }}
 
   basic-test:
     needs: [cache-docker-images]
