@@ -24,24 +24,25 @@ jobs:
         with:
           path: datahangar
 
+      - name: Cache Docker images
+        id: docker-cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.docker
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Cache docker images into a tarball
         run: |
           cd datahangar
-          mkdir -p /tmp/docker
-          .github/workflows/files/collect_docker_images.sh . > /tmp/docker/images_list
-          IMAGES=$(cat /tmp/docker/images_list)
+          mkdir -p /tmp/.docker
+          .github/workflows/files/collect_docker_images.sh . > /tmp/.docker/images_list
+          IMAGES=$(cat /tmp/.docker/images_list)
           for IMAGE in ${IMAGES}; do
             docker pull ${IMAGE}
           done
-          docker save $(for IMAGE in ${IMAGES}; do echo "${IMAGE} "; done) -o /tmp/docker/docker_images_${GITHUB_RUN_ID}.tar
-
-      - name: Export Cache as an artifact
-        uses: actions/upload-artifact@v2.2.2
-        with:
-          name: docker_images
-          retention-days: 1
-          path: |
-            /tmp/docker
+          docker save $(for IMAGE in ${IMAGES}; do echo "${IMAGE} "; done) -o /tmp/.docker/docker_images.tar
 
       - name: Check available disk space...
         run: |
@@ -86,15 +87,18 @@ jobs:
           cpus: 'max'
           memory: 12G
 
-      - uses: actions/download-artifact@v2
+      - name: Restore Docker images
+        uses: actions/cache@v3
         with:
-          name: docker_images
-          path: /tmp/docker
+          path: /tmp/.docker
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Import docker cached images to minikube's registry
         run: |
           eval $(minikube docker-env)
-          docker load -i /tmp/docker/docker_images_${GITHUB_RUN_ID}.tar
+          docker load -i /tmp/.docker/docker_images.tar
           docker image ls
 
       - name: "Deploy DataHangar stack (DB: ${{matrix.db}})"
